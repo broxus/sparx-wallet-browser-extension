@@ -70,7 +70,7 @@ export class AccountCardViewModel {
 
         if (!everPrice || !balance) return undefined
 
-        const assets = this.account ? this.account.additionalAssets[this.selectedConnection.group]?.tokenWallets : []
+        const assets = this.account?.additionalAssets?.[this.selectedConnection.group]?.tokenWallets || []
         const assetsUsdtTotal = assets?.reduce((sum, { rootTokenContract }) => {
             const token = tokens[rootTokenContract]
             const price = prices[rootTokenContract]
