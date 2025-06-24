@@ -206,7 +206,7 @@ export const ApproveTonSendMessage = observer((): JSX.Element | null => {
                         <Button
                             design="accent"
                             disabled={disabled}
-                            loading={vm.loading}
+                            loading={vm.loading || vm.txErrorsLoaded === false}
                             onClick={handleSubmit(vm.onSubmit)}
                         >
                             {intl.formatMessage({ id: 'SEND_BTN_TEXT' })}
