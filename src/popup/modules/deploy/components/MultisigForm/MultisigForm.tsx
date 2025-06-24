@@ -42,6 +42,7 @@ interface Props {
 
 const pattern = /^[a-fA-F0-9]{64}$/
 const hours = [1, 4, 12, 24]
+const MAX_CUSTODIAN = 32
 
 export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.Element => {
     const intl = useIntl()
@@ -251,13 +252,15 @@ export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.
                             </FormControl>
                         ))}
 
-                        <Button
-                            design="ghost" size="s" className={styles.add}
-                            onClick={addField}
-                        >
-                            {Icons.plus}
-                            {intl.formatMessage({ id: 'DEPLOY_MULTISIG_FORM_ADD_FIELD_LINK_TEXT' })}
-                        </Button>
+                        {fields.length <= MAX_CUSTODIAN && (
+                            <Button
+                                design="ghost" size="s" className={styles.add}
+                                onClick={addField}
+                            >
+                                {Icons.plus}
+                                {intl.formatMessage({ id: 'DEPLOY_MULTISIG_FORM_ADD_FIELD_LINK_TEXT' })}
+                            </Button>
+                        )}
                     </Form>
                 </Content>
 
