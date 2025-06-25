@@ -2,9 +2,11 @@
 import * as React from 'react'
 import { JdenticonConfig, toSvg } from 'jdenticon'
 import classNames from 'classnames'
-import { useLocalStorage } from 'usehooks-ts'
+import { observer } from 'mobx-react-lite'
 
 import styles from './index.module.scss'
+import { useResolve } from '../../hooks'
+import { AccountabilityStore } from '../../store'
 
 type Props = {
     value: string
@@ -12,13 +14,14 @@ type Props = {
     className?: string
 }
 
-export const Jdenticon: React.FC<Props> = ({
+export const Jdenticon: React.FC<Props> = observer(({
     value,
     size = 40,
     className,
 }) => {
-    const [color] = useAddressColor(value)
-    const svg = React.useMemo(() => toSvg(value, size, color ? getJdenticonConfig(color) : {
+    const accountability = useResolve(AccountabilityStore)
+    const color = accountability.accountsColor[value] ?? JDENTICON_COLORS.Blue
+    const svg = React.useMemo(() => toSvg(value, size, color ? getJdenticonConfig(color as JDENTICON_COLORS) : {
         backColor: '#fff',
     }), [value, size, color])
 
@@ -29,7 +32,7 @@ export const Jdenticon: React.FC<Props> = ({
             src={`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`}
         />
     )
-}
+})
 
 export enum JDENTICON_COLORS {
     Blue = 'Blue',
@@ -74,23 +77,4 @@ const configMap: Record<JDENTICON_COLORS, JdenticonConfig> = {
         hues: [19],
         backColor: '#ff6f2f',
     },
-}
-
-const STORAGE_KEY = 'wallet:address-color'
-
-const getAddressColor = (address: string): JDENTICON_COLORS | null => localStorage.getItem(STORAGE_KEY + address) as JDENTICON_COLORS | null
-
-const setAddressColor = (address: string, color: JDENTICON_COLORS) => {
-    localStorage.setItem(STORAGE_KEY + address, color)
-}
-
-export const useAddressColor = (address: string): [JDENTICON_COLORS, (color: JDENTICON_COLORS) => void] => {
-    const [color, setColor] = useLocalStorage<JDENTICON_COLORS>(STORAGE_KEY + address, getAddressColor(address) || JDENTICON_COLORS.Blue)
-
-    const updateColor = (newColor: JDENTICON_COLORS) => {
-        setColor(newColor)
-        setAddressColor(address, newColor)
-    }
-
-    return [color, updateColor]
 }

@@ -105,6 +105,7 @@ export interface AccountControllerState extends BaseState {
         [address: string]: { [messageHash: string]: StoredBriefMessageInfo }
     };
     accountsVisibility: { [address: string]: boolean };
+    accountsColor: { [address: string]: string };
     externalAccounts: ExternalAccount[];
     knownTokens: { [rootTokenContract: string]: nt.Symbol | JettonSymbol };
     recentMasterKeys: nt.KeyStoreEntry[];
@@ -133,6 +134,7 @@ const defaultState: AccountControllerState = {
     selectedAccountAddress: undefined,
     selectedMasterKey: undefined,
     storedKeys: {},
+    accountsColor: {},
 }
 
 // TODO: refactor network type check (network === 'ton' ? ... : ...)
@@ -264,6 +266,7 @@ export class AccountController extends BaseController<AccountControllerConfig, A
         }
 
         const accountsVisibility = storage.snapshot.accountsVisibility ?? {}
+        const accountsColor = storage.snapshot.accountsColor ?? {}
         const masterKeysNames = storage.snapshot.masterKeysNames ?? {}
         const recentMasterKeys = storage.snapshot.recentMasterKeys ?? []
         const knownTokens = storage.snapshot.knownTokens ?? {}
@@ -282,6 +285,7 @@ export class AccountController extends BaseController<AccountControllerConfig, A
             selectedMasterKey,
             storedKeys,
             knownTokens,
+            accountsColor,
         })
     }
 
@@ -689,6 +693,7 @@ export class AccountController extends BaseController<AccountControllerConfig, A
                 'selectedMasterKey',
                 'masterKeysNames',
                 'accountsVisibility',
+                'accountsColor',
                 'recentMasterKeys',
                 'externalAccounts',
                 'knownTokens',
@@ -1325,6 +1330,17 @@ export class AccountController extends BaseController<AccountControllerConfig, A
         })
 
         await this._saveAccountsVisibility()
+    }
+
+    public async updateAccountColor(address: string, color: string): Promise<void> {
+        this.update({
+            accountsColor: {
+                ...this.state.accountsColor,
+                [address]: color,
+            },
+        })
+
+        await this._saveAccountsColor()
     }
 
     public async checkPassword(password: nt.KeyPassword) {
@@ -2847,6 +2863,10 @@ export class AccountController extends BaseController<AccountControllerConfig, A
         return this.config.storage.set({ accountsVisibility: this.state.accountsVisibility })
     }
 
+    private _saveAccountsColor(): Promise<void> {
+        return this.config.storage.set({ accountsColor: this.state.accountsColor })
+    }
+
     private _saveExternalAccounts(): Promise<void> {
         return this.config.storage.set({ externalAccounts: this.state.externalAccounts })
     }
@@ -3234,6 +3254,7 @@ type HiddenAssets = {
 
 interface AccountStorage {
     accountsVisibility: AccountControllerState['accountsVisibility'];
+    accountsColor: AccountControllerState['accountsColor'];
     externalAccounts: AccountControllerState['externalAccounts'];
     masterKeysNames: AccountControllerState['masterKeysNames'];
     recentMasterKeys: AccountControllerState['recentMasterKeys'];
@@ -3248,6 +3269,11 @@ interface AccountStorage {
 
 Storage.register<AccountStorage>({
     accountsVisibility: {
+        exportable: true,
+        deserialize: Deserializers.object,
+        validate: (value: unknown) => !value || typeof value === 'object',
+    },
+    accountsColor: {
         exportable: true,
         deserialize: Deserializers.object,
         validate: (value: unknown) => !value || typeof value === 'object',

@@ -124,6 +124,10 @@ export class AccountabilityStore {
         return this.rpcStore.state.accountsVisibility ?? {}
     }
 
+    public get accountsColor(): Record<string, string> {
+        return this.rpcStore.state.accountsColor ?? {}
+    }
+
     public get selectedAccountAddress(): string | undefined {
         return this._selectedAccountAddress
     }

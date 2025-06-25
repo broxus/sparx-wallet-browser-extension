@@ -1,17 +1,17 @@
 import classNames from 'classnames'
 
 import styles from './ColorRadioButton.module.scss'
-import { JDENTICON_COLORS } from '../Jdenticon'
 import { Box } from '../Box'
+import { JDENTICON_COLORS } from '../Jdenticon'
 
 interface Props {
-    color: JDENTICON_COLORS,
+    color: string,
     size?: 'small' | 'medium',
     selected?: boolean,
     onClick?: () => void,
 }
 
-export const ColorRadioButton = ({ color, size = 'medium', onClick, selected }: Props): JSX.Element => (
+export const ColorRadioButton = ({ color = JDENTICON_COLORS.Blue, size = 'medium', onClick, selected }: Props): JSX.Element => (
     <Box
         className={classNames(styles.content, styles[size], { [styles.selected]: selected })}
         onClick={onClick}

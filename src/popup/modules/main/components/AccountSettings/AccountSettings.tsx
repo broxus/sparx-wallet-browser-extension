@@ -2,11 +2,10 @@ import { useCallback } from 'react'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { Card, ColorRadioButton, Container, Content, Space, useConfirmation, useViewModel } from '@app/popup/modules/shared'
+import { AccountabilityStore, Card, ColorRadioButton, Container, Content, Space, useConfirmation, useResolve, useViewModel } from '@app/popup/modules/shared'
 import { QRCode } from '@app/popup/modules/shared/components/QRCode'
 import { ChangeAccountColor, ChangeAccountName } from '@app/popup/modules/account'
 import { LedgerVerifyAddress } from '@app/popup/modules/ledger'
-import { useAddressColor } from '@app/popup/modules/shared/components/Jdenticon'
 
 import { AccountSettingsViewModel } from './AccountSettingsViewModel'
 import { CopyItem, SettingsItem } from './components'
@@ -18,7 +17,7 @@ interface Props {
 }
 
 export const AccountSettings = observer(({ address }: Props): JSX.Element => {
-    const [color] = useAddressColor(address)
+    const accountability = useResolve(AccountabilityStore)
     const intl = useIntl()
     const confirmation = useConfirmation()
     const vm = useViewModel(
@@ -119,7 +118,7 @@ export const AccountSettings = observer(({ address }: Props): JSX.Element => {
                             label={intl.formatMessage({
                                 id: 'CHANGE_AVATAR_COLOR',
                             })}
-                            iconElement={<ColorRadioButton color={color} size="small" />}
+                            iconElement={<ColorRadioButton color={accountability.accountsColor[accountability.selectedAccountAddress || '']} size="small" />}
                             onClick={handleChangeAvatarColor}
                         />
 

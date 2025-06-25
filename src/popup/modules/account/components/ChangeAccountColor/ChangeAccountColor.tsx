@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { Button, ColorRadioButton, Container, Content, Footer, useViewModel } from '@app/popup/modules/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
-import { useAddressColor, JDENTICON_COLORS } from '@app/popup/modules/shared/components/Jdenticon'
+import { JDENTICON_COLORS } from '@app/popup/modules/shared/components/Jdenticon'
 
 import styles from './ChangeAccountColor.module.scss'
 import { ChangeAccountColorViewModel } from './ChangeAccountColorViewModel'
@@ -16,12 +16,14 @@ interface Props {
 
 export const ChangeAccountColor = observer(({ account }: Props): JSX.Element => {
     const intl = useIntl()
-    const vm = useViewModel(ChangeAccountColorViewModel)
-    const [initialColor, setAddressColor] = useAddressColor(account.tonWallet.address)
-    const [color, setColor] = useState(initialColor)
+    const vm = useViewModel(ChangeAccountColorViewModel, (model) => {
+        model.account = account
+    })
+    const [color, setColor] = useState(vm.accountColor || JDENTICON_COLORS.Blue)
+
 
     const handleSave = () => {
-        setAddressColor(color)
+        vm.updateAccountColor(account, color)
         vm.handle.close()
     }
 
