@@ -23,6 +23,8 @@ export class AccountListViewModel {
                 this.handle.close()
             }
         })
+
+        this.rpcStore.rpc.updateContractState(Object.keys(this.accountability.accountEntries))
     }
 
     dispose(): void {

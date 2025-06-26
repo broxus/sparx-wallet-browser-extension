@@ -298,59 +298,59 @@ export class AccountController extends BaseController<AccountControllerConfig, A
             log.trace('startSubscriptions -> mutex gained')
 
             const { accountsStorage } = this.config
-            const { accountEntries } = this.state
+            const { accountEntries, selectedAccountAddress } = this.state
 
-            const iterateEntries = (f: (entry: nt.AssetsList) => void) => Promise.all(
-                Object.values(accountEntries).map(f),
-            )
+            if (!selectedAccountAddress) return
+            const { tonWallet, additionalAssets } = accountEntries[selectedAccountAddress]
+
+
             const invalidTokenWallets: Array<{ owner: string, rootTokenContract: string }> = []
 
-            await iterateEntries(async ({ tonWallet, additionalAssets }) => {
-                try {
-                    await this._createEverWalletSubscription(
-                        tonWallet.address,
-                        tonWallet.publicKey,
-                        tonWallet.contractType,
-                    )
+            try {
+                await this._createEverWalletSubscription(
+                    tonWallet.address,
+                    tonWallet.publicKey,
+                    tonWallet.contractType,
+                )
 
-                    const assets = additionalAssets[selectedConnection.group] as
+                const assets = additionalAssets[selectedConnection.group] as
                         | nt.AdditionalAssets
                         | undefined
 
-                    if (assets) {
-                        const results = await Promise.allSettled(
-                            assets.tokenWallets.map(async ({ rootTokenContract }) => {
-                                if (selectedConnection.network === 'ton') {
-                                    await this._createJettonWalletSubscription(
-                                        tonWallet.address,
-                                        rootTokenContract,
-                                    )
-                                }
-                                else {
-                                    await this._createTokenWalletSubscription(
-                                        tonWallet.address,
-                                        rootTokenContract,
-                                    )
-                                }
-                            }),
-                        )
-
-                        for (let i = 0; i < results.length; i++) {
-                            const result = results[i]
-
-                            if (result.status === 'rejected' && result.reason?.message === 'Invalid root token contract') {
-                                invalidTokenWallets.push({
-                                    owner: tonWallet.address,
-                                    rootTokenContract: assets.tokenWallets[i].rootTokenContract,
-                                })
+                if (assets) {
+                    const results = await Promise.allSettled(
+                        assets.tokenWallets.map(async ({ rootTokenContract }) => {
+                            if (selectedConnection.network === 'ton') {
+                                await this._createJettonWalletSubscription(
+                                    tonWallet.address,
+                                    rootTokenContract,
+                                )
                             }
+                            else {
+                                await this._createTokenWalletSubscription(
+                                    tonWallet.address,
+                                    rootTokenContract,
+                                )
+                            }
+                        }),
+                    )
+
+                    for (let i = 0; i < results.length; i++) {
+                        const result = results[i]
+
+                        if (result.status === 'rejected' && result.reason?.message === 'Invalid root token contract') {
+                            invalidTokenWallets.push({
+                                owner: tonWallet.address,
+                                rootTokenContract: assets.tokenWallets[i].rootTokenContract,
+                            })
                         }
                     }
                 }
-                catch (e) {
-                    log.trace('startSubscriptions -> failed to create subscription', tonWallet.address, e)
-                }
-            })
+            }
+            catch (e) {
+                log.trace('startSubscriptions -> failed to create subscription', tonWallet.address, e)
+            }
+
 
             if (invalidTokenWallets.length) {
                 log.trace('startSubscriptions -> remove invalid token wallets', invalidTokenWallets)
@@ -2037,6 +2037,26 @@ export class AccountController extends BaseController<AccountControllerConfig, A
                 subscription?.skipRefreshTimer()
             }))
         })
+
+
+        await this._accountsMutex.use(async () => {
+            log.trace('stopWalletsSubscriptions -> mutex gained')
+
+            const { selectedAccountAddress } = this.state
+            const accounts = new Set(addresses)
+
+            const subscriptionsToRemove = Array.from(this._everWalletSubscriptions.entries())
+                .filter(([address]) => accounts.has(address) && address !== selectedAccountAddress)
+
+            await Promise.all(subscriptionsToRemove.map(([, item]) => item.stop()))
+
+            for (const [address] of subscriptionsToRemove) {
+                this._everWalletSubscriptions.delete(address)
+            }
+
+
+            log.trace('stopWalletsSubscriptions -> mutex released')
+        })
     }
 
     public async getTokenBalance(owner: string, rootTokenContract: string): Promise<string> {
@@ -3130,31 +3150,29 @@ export class AccountController extends BaseController<AccountControllerConfig, A
     }
 
     private _enableIntensivePolling() {
-        const { selectedMasterKey } = this.state
+        const { selectedAccountAddress, accountEntries } = this.state
         const { connectionController: { selectedConnectionPollings }} = this.config
 
-        if (!selectedMasterKey) return
+        if (!selectedAccountAddress) return
 
-        const selectedAccounts = this._getAccountsByMasterKey(selectedMasterKey)
+        const account = accountEntries[selectedAccountAddress]
 
-        for (const account of selectedAccounts) {
-            const everSubscription = this._everWalletSubscriptions.get(account.tonWallet.address)
-            const tokenSubscriptions = this._tokenWalletSubscriptions.get(account.tonWallet.address)
-            const jettonSubscriptions = this._jettonWalletSubscriptions.get(account.tonWallet.address)
+        const everSubscription = this._everWalletSubscriptions.get(account.tonWallet.address)
+        const tokenSubscriptions = this._tokenWalletSubscriptions.get(account.tonWallet.address)
+        const jettonSubscriptions = this._jettonWalletSubscriptions.get(account.tonWallet.address)
 
-            everSubscription?.skipRefreshTimer()
-            everSubscription?.setPollingInterval(selectedConnectionPollings.tonWalletRefreshInterval)
+        everSubscription?.skipRefreshTimer()
+        everSubscription?.setPollingInterval(selectedConnectionPollings.tonWalletRefreshInterval)
 
-            tokenSubscriptions?.forEach((subscription) => {
-                subscription.skipRefreshTimer()
-                subscription.setPollingInterval(selectedConnectionPollings.tokenWalletRefreshInterval)
-            })
+        tokenSubscriptions?.forEach((subscription) => {
+            subscription.skipRefreshTimer()
+            subscription.setPollingInterval(selectedConnectionPollings.tokenWalletRefreshInterval)
+        })
 
-            jettonSubscriptions?.forEach((subscription) => {
-                subscription.skipRefreshTimer()
-                subscription.setPollingInterval(selectedConnectionPollings.tokenWalletRefreshInterval)
-            })
-        }
+        jettonSubscriptions?.forEach((subscription) => {
+            subscription.skipRefreshTimer()
+            subscription.setPollingInterval(selectedConnectionPollings.tokenWalletRefreshInterval)
+        })
     }
 
     private _disableIntensivePolling() {
