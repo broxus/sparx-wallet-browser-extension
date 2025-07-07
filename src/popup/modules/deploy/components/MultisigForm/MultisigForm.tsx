@@ -252,7 +252,7 @@ export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.
                             </FormControl>
                         ))}
 
-                        {fields.length <= MAX_CUSTODIAN && (
+                        {fields.length < MAX_CUSTODIAN && (
                             <Button
                                 design="ghost" size="s" className={styles.add}
                                 onClick={addField}
