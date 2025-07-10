@@ -351,7 +351,6 @@ export class AccountController extends BaseController<AccountControllerConfig, A
                 log.trace('startSubscriptions -> failed to create subscription', tonWallet.address, e)
             }
 
-
             if (invalidTokenWallets.length) {
                 log.trace('startSubscriptions -> remove invalid token wallets', invalidTokenWallets)
 
@@ -1136,6 +1135,7 @@ export class AccountController extends BaseController<AccountControllerConfig, A
         })
 
         await this._saveSelectedAccountAddress()
+        await this.startSubscriptions()
     }
 
     public async selectFirstAccount(): Promise<void> {
@@ -1226,6 +1226,8 @@ export class AccountController extends BaseController<AccountControllerConfig, A
 
             log.trace('selectAccount -> mutex released')
         })
+
+        await this.startSubscriptions()
     }
 
     public async removeAccount(address: string) {
