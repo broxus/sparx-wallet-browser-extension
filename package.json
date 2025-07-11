@@ -28,6 +28,7 @@
   "dependencies": {
     "@broxus/await-semaphore": "^0.1.5",
     "@broxus/ever-wallet-wasm": "0.2.18",
+    "@rive-app/react-canvas-lite": "^4.21.4",
     "@ton/core": "^0.59.1",
     "@tonconnect/protocol": "^2.2.7",
     "bignumber.js": "^9.1.1",

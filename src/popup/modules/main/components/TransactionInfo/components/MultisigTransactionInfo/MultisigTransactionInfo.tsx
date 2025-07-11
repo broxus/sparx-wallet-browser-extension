@@ -12,6 +12,7 @@ import { EnterSendPassword } from '@app/popup/modules/send'
 import { TrxIcon } from '@app/popup/modules/shared/components/TrxIcon'
 import { Data } from '@app/popup/modules/shared/components/Data'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
+import { RocketAnimation } from '@app/popup/modules/shared/components/RiveAnimation/Animations/RocketAnimation'
 
 import { MultisigTransactionInfoViewModel, Step } from './MultisigTransactionInfoViewModel'
 import styles from './MultisigTransactionInfo.module.scss'
@@ -49,7 +50,7 @@ export const MultisigTransactionInfo = observer((props: Props): JSX.Element => {
         return (
             <Container>
                 <Content className={styles.sentContent}>
-                    <Icon icon="rocket" />
+                    <RocketAnimation />
                     <p>{intl.formatMessage({ id: 'SEND_MESSAGE_RESULT_HEADER' })}</p>
                 </Content>
 

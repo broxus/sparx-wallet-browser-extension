@@ -1,9 +1,10 @@
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import { ButtonWithAutoFocus, Container, Content, Footer, Icon } from '@app/popup/modules/shared'
+import { ButtonWithAutoFocus, Container, Content, Footer } from '@app/popup/modules/shared'
 import { closeCurrentWindow } from '@app/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
+import { RocketAnimation } from '@app/popup/modules/shared/components/RiveAnimation/Animations/RocketAnimation'
 
 import styles from './SendResult.module.scss'
 
@@ -15,7 +16,7 @@ export const SendResult = observer((): JSX.Element => {
     return (
         <Container>
             <Content className={styles.content}>
-                <Icon icon="rocket" />
+                <RocketAnimation />
                 <p>{intl.formatMessage({ id: 'SEND_MESSAGE_RESULT_HEADER' })}</p>
             </Content>
 

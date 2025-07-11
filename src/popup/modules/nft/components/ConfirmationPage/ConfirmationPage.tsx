@@ -2,9 +2,10 @@ import { observer } from 'mobx-react-lite'
 import { useNavigate } from 'react-router'
 import { useIntl } from 'react-intl'
 
-import { ButtonWithAutoFocus, Container, Content, Footer, Icon, useViewModel } from '@app/popup/modules/shared'
+import { ButtonWithAutoFocus, Container, Content, Footer, useViewModel } from '@app/popup/modules/shared'
 import { EnterSendPassword } from '@app/popup/modules/send'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
+import { RocketAnimation } from '@app/popup/modules/shared/components/RiveAnimation/Animations/RocketAnimation'
 
 import styles from './ConfirmationPage.module.scss'
 import { ConfirmationPageViewModel, Step } from './ConfirmationPageViewModel'
@@ -19,7 +20,7 @@ export const ConfirmationPage = observer((): JSX.Element => {
         return (
             <Container>
                 <Content className={styles.sentContent}>
-                    <Icon icon="rocket" />
+                    <RocketAnimation />
                     <p>{intl.formatMessage({ id: 'NFT_SEND_RESULT_HEADER' })}</p>
                 </Content>
 

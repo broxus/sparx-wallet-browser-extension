@@ -238,6 +238,10 @@ module.exports = [
                     type: 'asset/resource',
                     exclude: resolve(SRC_DIR, 'popup/assets/icons'),
                 },
+                {
+                    test: /\.riv$/,
+                    type: 'asset/resource',
+                  },
             ],
         },
 
