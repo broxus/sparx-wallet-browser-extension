@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
@@ -27,34 +27,72 @@ export const NftDetails = observer((): JSX.Element => {
     const scrollerRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
 
+    const [isError, setIsError] = useState(false)
+    const [isOpen, setOpen] = useState(false)
+
     if (!vm.nft) return <PageLoader />
+
+    const isShowPlaceholder = (isError || (!vm.isEvername && !vm.nft.img))
 
     return (
         <Page
             animated page={page}
-            className={styles.page}
+            className={classNames(styles.page, {
+                [styles.hidden]: isOpen,
+            })}
         >
+            {isOpen && (
+                <div className={styles.modal}>
+                    <Button
+                        size="s"
+                        shape="pill"
+                        design="neutral"
+                        className={classNames(styles.back)}
+                        onClick={() => setOpen(false)}
+                    >
+                        <Icon icon="x" width={16} height={16} />
+                    </Button>
+                    {vm.nft.img && (
+                        <NftImg src={vm.nft.img} alt={vm.nft.name} />
+                    )}
+                    {vm.isEvername && !vm.nft.img && (
+                        <img src={vm.nft.preview || EvernameBg} alt="" />
+                    )}
+                </div>
+            )}
             <div className={styles.root}>
                 <Button
                     size="s"
                     shape="pill"
-                    design="transparency"
+                    design="neutral"
                     className={classNames(styles.close)}
                     onClick={() => navigate(-1)}
                 >
                     <Icon icon="arrowLeft" width={16} height={16} />
                 </Button>
+                {!isShowPlaceholder && (
+                    <Button
+                        size="s"
+                        shape="pill"
+                        design="neutral"
+                        className={classNames(styles.zoom)}
+                        onClick={() => setOpen(true)}
+                    >
+                        <Icon icon="zoom" width={16} height={16} />
+                    </Button>
+                )}
 
                 <div ref={imgRef} className={classNames(styles.img)}>
                     {vm.nft.img && (
-                        <NftImg src={vm.nft.img} alt={vm.nft.name} />
+                        <NftImg src={vm.nft.img} alt={vm.nft.name} onError={() => setIsError(true)} />
                     )}
                     {vm.isEvername && !vm.nft.img && (
-                        <img src={EvernameBg} alt="" />
+                        <img src={vm.nft.preview || EvernameBg} alt="" onError={() => setIsError(true)} />
                     )}
-                    {!vm.isEvername && !vm.nft.img && (
+                    {isShowPlaceholder && (
                         <img src={PlaceholderImgSrc} alt="" />
                     )}
+
                 </div>
 
                 <div ref={scrollerRef} className={styles.scroller}>

@@ -319,7 +319,7 @@
     "CONNECTION_ERROR_TEXT": "Unable to connect. Choose another network.",
     "NFT_EMPTY_LIST_HEADER": "You don't have any NFT’s yet",
     "NFT_COLLECTION_SETTINGS": "Display settings",
-    "NFT_EMPTY_LIST_TEXT": "Visit our marketplace with top Everscale collections to get started",
+    "NFT_EMPTY_LIST_TEXT": "Visit our marketplace for available collections or import NFTs manually",
     "NFT_IMPORT_INTO_BTN_TEXT": "Add NFT",
     "NFT_INPUT_HELPER_TEXT": "This address is available in the transaction details of your NFT purchase.",
     "NFT_INPUT_PASTE_TEXT": "Paste NFT address",

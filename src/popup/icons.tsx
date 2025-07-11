@@ -76,6 +76,7 @@ import Users from '@app/popup/assets/icons/users.svg'
 import Wallet from '@app/popup/assets/icons/wallet.svg'
 import X from '@app/popup/assets/icons/x.svg'
 import Zap from '@app/popup/assets/icons/zap.svg'
+import Zoom from '@app/popup/assets/icons/zoom.svg'
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 export class Icons {
@@ -155,4 +156,5 @@ public static readonly users: ReactNode = <Users />
 public static readonly wallet: ReactNode = <Wallet />
 public static readonly x: ReactNode = <X />
 public static readonly zap: ReactNode = <Zap />
+public static readonly zoom: ReactNode = <Zoom />
 }

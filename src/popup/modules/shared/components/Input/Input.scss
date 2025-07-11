@@ -105,6 +105,10 @@
             color: styles.$text-secondary;
         }
 
+        .input__prefix {
+            padding-right: 8px;
+        }
+
         .reset__reset {
             @include styles.button-reset;
             @include styles.size(40px);

@@ -10,7 +10,10 @@ export const NftImg = memo((props: Props): JSX.Element => (
     <img
         {...props}
         className={classNames(styles.img, props.className)}
-        onError={onError}
+        onError={(e) => {
+            props.onError?.(e)
+            onError(e)
+        }}
         onLoad={onLoad}
     />
 ))

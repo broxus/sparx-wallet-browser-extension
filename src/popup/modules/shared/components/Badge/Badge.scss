@@ -17,8 +17,8 @@
         }
 
         &._type-info {
-            background: styles.$bg-light-blue;
-            color: styles.$blue;
+            background: $button-accent-bg-enabled;
+            color: styles.$text-contrast;
         }
 
         &._type-error {

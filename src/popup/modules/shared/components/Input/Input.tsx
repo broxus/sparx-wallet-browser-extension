@@ -56,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, Props>((props, ref): JSX.Eleme
     }
 
     const handlePaste = async () => {
-        const clipboardText = await navigator.clipboard.read()
+        const clipboardText = await navigator.clipboard.readText()
 
         _ref.current?.focus()
         inputProps.onChange?.({
