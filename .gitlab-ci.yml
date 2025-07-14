@@ -53,12 +53,7 @@ release:
   rules:
     - if: '$CI_COMMIT_REF_NAME == $BRANCH_NAME'
   variables:
-    VERSION_TYPE:
-      value: "patch"
-      options:
-        - patch
-        - minor
-        - major
+    VERSION_TYPE: "patch"
 
 
 notify:
