@@ -18,6 +18,7 @@ export const PrepareMessage = observer((): JSX.Element => {
         model.setFormError = (...args) => setError(...args)
     })
     const form = useForm<MessageFormData>({
+        mode: 'onChange',
         defaultValues: {
             recipient: vm.transfer.messageParams?.recipient ?? vm.transfer.initialAddress,
             amount: vm.transfer.messageParams?.originalAmount ?? '',
