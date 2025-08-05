@@ -293,6 +293,14 @@
             "currencyApiBaseUrl": "https://api-test-tycho.flatqube.io/v1",
             "tokenApiUrl": {
                 "balances": "https://e-tokens-api-tycho.broxus.com/v1/balances/search"
+            },
+            "stakeInformation": {
+                "stakingAPYLink": "https://staking-tycho-testnet-test.everwallet.net/v1/strategies/main",
+                "stakingVaultAddress": "0:538b6135fd39fc707b0c1459469db104383c431d4d116ffd0d58cc75c95a3f95",
+                "stakingRootContractAddress": "0:caab0a342f46d0f32d478a0e90c4ffd61e727ad2b838ea4c2a5825a484960b54",
+                "stakeDepositAttachedFee": "3000000000",
+                "stakeRemovePendingWithdrawAttachedFee": "3000000000",
+                "stakeWithdrawAttachedFee": "3000000000"
             }
         },
         {
@@ -346,8 +354,6 @@
             ],
             "defaultWalletType": "EverWallet",
             "stakeInformation": {
-                "symbol": "STEVER",
-                "decimals": 9,
                 "stakingAPYLink": "https://staking.everwallet.net/v1/strategies/main",
                 "stakingVaultAddress": "0:675a6d63f27e3f24d41d286043a9286b2e3eb6b84fa4c3308cc2833ef6f54d68",
                 "stakingRootContractAddress": "0:6d42d0bc4a6568120ea88bf642edb653d727cfbd35868c47877532de128e71f2",
@@ -390,8 +396,6 @@
             },
             "defaultWalletType": "EverWallet",
             "stakeInformation": {
-                "symbol": "STVENOM",
-                "decimals": 9,
                 "stakingAPYLink": "https://api.venomstake.com/v1/strategies/main",
                 "stakingVaultAddress": "0:9df94dffc0ca1768647f819c04b2cf00c484b3b756ba6ecde68d5fb62de1dfc7",
                 "stakingRootContractAddress": "0:74604c7a56419477d67329848d754d205f31870025a7135909e90e1726ad9a54",

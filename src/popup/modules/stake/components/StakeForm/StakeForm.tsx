@@ -11,11 +11,13 @@ import { StakeFormViewModel } from './StakeFormViewModel'
 
 interface Props {
     onSubmit(data: StakeFromData): void;
+    onError(error: string): void;
 }
 
-export const StakeForm = observer(({ onSubmit }: Props): JSX.Element => {
+export const StakeForm = observer(({ onSubmit, onError }: Props): JSX.Element => {
     const vm = useViewModel(StakeFormViewModel, (model) => {
         model.onSubmit = onSubmit
+        model.onError = onError
     })
     const intl = useIntl()
 
@@ -45,7 +47,7 @@ export const StakeForm = observer(({ onSubmit }: Props): JSX.Element => {
                     label={intl.formatMessage({ id: 'STAKE_FORM_EXCHANGE_RATE' })}
                     value={vm.exchangeRate && (
                         <div className="stake-form__details-item-value">
-                            1 {vm.stakingInfo.symbol} ≈ {vm.exchangeRate} {vm.currencyName}
+                            1 {vm.currencyName} ≈ {vm.exchangeRate} {vm.stakingInfo.symbol}
                         </div>
                     )}
                 />
@@ -58,7 +60,7 @@ export const StakeForm = observer(({ onSubmit }: Props): JSX.Element => {
                         <Amount
                             precise
                             icon={<AssetIcon type="ever_wallet" />}
-                            value={convertEvers(vm.decimals, vm.stakingInfo.stakeDepositAttachedFee)}
+                            value={convertEvers(vm.decimals, vm.depositAttachedFee)}
                             currency={vm.currencyName}
                         />
                     )}

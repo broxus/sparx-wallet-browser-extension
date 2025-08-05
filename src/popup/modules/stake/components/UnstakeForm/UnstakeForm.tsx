@@ -12,6 +12,7 @@ import styles from './UnstakeForm.module.scss'
 
 interface Props {
     onSubmit(data: StakeFromData): void;
+    onError(error: string): void;
 }
 
 export const UnstakeForm = observer(({ onSubmit }: Props): JSX.Element => {

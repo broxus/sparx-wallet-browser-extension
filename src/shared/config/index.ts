@@ -56,8 +56,6 @@ export type Blockchain = {
         balances: string;
     };
     stakeInformation?: {
-        decimals: number;
-        symbol: string;
         stakingAPYLink: string;
         stakingVaultAddress: string;
         stakingRootContractAddress: string;

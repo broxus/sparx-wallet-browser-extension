@@ -1,10 +1,8 @@
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import EverImg from '@app/popup/assets/img/stake/ever.svg'
-import SteverImg from '@app/popup/assets/img/stake/stever.svg'
 import DefiImg from '@app/popup/assets/img/stake/defi.svg'
-import { Button, Container, Content, Footer, SlidingPanel } from '@app/popup/modules/shared'
+import { AssetIcon, Button, Container, Content, Footer, SlidingPanel } from '@app/popup/modules/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
 // import { STAKE_APY_PERCENT, STAKE_TUTORIAL_URL } from '@app/shared'
 // import DollarImg from '@app/popup/assets/img/stake/dollar.svg'
@@ -15,9 +13,12 @@ type StakeTutorialProps = {
     onClose: ()=>void
     active: boolean
     symbol: string
+    receiveSymbol: string
+    stTokenRoot: string
 }
 
-export const StakeTutorial = observer(({ onClose, active, symbol }:StakeTutorialProps): JSX.Element => {
+export const StakeTutorial = observer(({ onClose,
+    active, receiveSymbol, symbol, stTokenRoot }:StakeTutorialProps): JSX.Element => {
     const intl = useIntl()
 
     return (
@@ -25,25 +26,25 @@ export const StakeTutorial = observer(({ onClose, active, symbol }:StakeTutorial
             <Container>
                 <Content>
                     <div className={styles.item}>
-                        <img className={styles.img} src={EverImg} alt="" />
+                        <AssetIcon type="ever_wallet" className={styles.img} />
                         <div className={styles.wrap}>
                             <div className={styles.label}>
-                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_TITLE_1' })}
+                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_TITLE_1' }, { symbol })}
                             </div>
                             <div className={styles.text}>
-                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_DESCRIPTION_1' })}
+                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_DESCRIPTION_1' }, { symbol })}
                             </div>
                         </div>
                     </div>
 
                     <div className={styles.item}>
-                        <img className={styles.img} src={SteverImg} alt="" />
+                        <AssetIcon type="token_wallet" address={stTokenRoot} className={styles.img} />
                         <div className={styles.wrap}>
                             <div className={styles.label}>
-                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_TITLE_2' }, { symbol })}
+                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_TITLE_2' }, { symbol: receiveSymbol })}
                             </div>
                             <div className={styles.text}>
-                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_DESCRIPTION_2' }, { symbol })}
+                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_DESCRIPTION_2' }, { symbol: receiveSymbol })}
                             </div>
                         </div>
                     </div>

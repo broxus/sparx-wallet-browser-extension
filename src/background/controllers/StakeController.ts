@@ -3,7 +3,7 @@ import { Mutex } from '@broxus/await-semaphore'
 import type { AbiEventName, AbiParam, DecodedAbiEventData } from 'everscale-inpage-provider'
 import { Address, parseTokensObject } from 'everscale-inpage-provider'
 
-import { StEverAccountAbi, StEverVaultAbi } from '@app/abi'
+import { StEverAccountAbi, StEverVaultAbi, StTychoVaultAbi } from '@app/abi'
 import type { Nekoton, StEverVaultDetails, WithdrawRequest } from '@app/models'
 import { Blockchain } from '@app/shared'
 
@@ -115,6 +115,7 @@ export class StakeController extends BaseController<StakeControllerConfig, Stake
 
     public async getStakeDetails(): Promise<StEverVaultDetails> {
         const contract = this._getVaultContract()
+
         const { value0 } = await contract.call('getDetails', {
             answerId: 0,
         }, { responsible: true })
@@ -304,7 +305,14 @@ export class StakeController extends BaseController<StakeControllerConfig, Stake
 
         if (!address) throw new Error('Unsupported network')
 
-        return this.config.contractFactory.create(StEverVaultAbi, address)
+        let abi: any = StEverVaultAbi
+
+        if (this.config.connectionController.state.selectedConnection.network === 'tycho') {
+            abi = StTychoVaultAbi
+        }
+
+
+        return this.config.contractFactory.create(abi, address)
     }
 
     private _getAccountContract(address: string): Contract<AccountAbi> {

@@ -338,7 +338,7 @@
     "STAKE_TUTORIAL_HEADER": "유동 스테이킹 작동 방식",
     "STAKE_TUTORIAL_BTN_TEXT": "알겠습니다",
     "STAKE_TUTORIAL_TITLE_1": "EVER 스테이킹",
-    "STAKE_TUTORIAL_DESCRIPTION_1": "유동 스테이킹에 스테이킹하려는 EVER의 양을 선택하십시오.",
+    "STAKE_TUTORIAL_DESCRIPTION_1": "Select the amount of {symbol} you want to stake in liquid staking.",
     "STAKE_TUTORIAL_TITLE_2": "{symbol} 받기",
     "STAKE_TUTORIAL_DESCRIPTION_2": "대가로 {symbol} 토큰을 받으며 수령금액은 풀의 현재 환율에 따라 결정됩니다.",
     "STAKE_TUTORIAL_TITLE_3": "가격 인상시 적립",

@@ -15,6 +15,8 @@ export class UnstakeFormViewModel {
 
     public onSubmit!: (data: StakeFromData) => void
 
+    public onError!: (error: string) => void
+
     public loading = false
 
     public amount = ''
@@ -22,6 +24,8 @@ export class UnstakeFormViewModel {
     public dirty = false
 
     public withdrawEverAmount = '0'
+
+    public withdrawAttachedFee = '0'
 
     constructor(
         private transfer: StakeTransferStore,
@@ -35,6 +39,11 @@ export class UnstakeFormViewModel {
         if (transfer.messageParams?.originalAmount !== '0') {
             this.amount = transfer.messageParams?.originalAmount ?? ''
         }
+        this.withdrawAttachedFee = this.stakingInfo.stakeWithdrawAttachedFee
+
+        utils.autorun(() => {
+            this.onError(this.error || '')
+        })
 
         utils.autorun(() => {
             if (!this.decimals) return
@@ -47,6 +56,8 @@ export class UnstakeFormViewModel {
             catch {}
 
             this.estimateDepositStEverAmount(amount).catch(logger.error)
+
+            this.estimateFee()
         })
     }
 
@@ -163,6 +174,19 @@ export class UnstakeFormViewModel {
 
             runInAction(() => {
                 this.withdrawEverAmount = amount
+            })
+        }
+        catch (e) {
+            this.logger.error(e)
+        }
+    }
+
+    private async estimateFee(): Promise<void> {
+        try {
+            const { withdrawAttachedFee } = await this.stakeStore.computeFees()
+
+            runInAction(() => {
+                this.withdrawAttachedFee = withdrawAttachedFee
             })
         }
         catch (e) {

@@ -10,6 +10,7 @@ import { Logger } from '../utils'
 import { NekotonToken } from '../di-container'
 import { RpcStore } from './RpcStore'
 import { ConnectionStore } from './ConnectionStore'
+import { TokensStore } from './TokensStore'
 
 @singleton()
 export class StakeStore {
@@ -23,6 +24,7 @@ export class StakeStore {
         private rpcStore: RpcStore,
         private connectionStore: ConnectionStore,
         private logger: Logger,
+        private tokensStore: TokensStore,
     ) {
         makeAutoObservable(this, undefined, { autoBind: true })
         this.fetchInfo()
@@ -36,9 +38,27 @@ export class StakeStore {
         return this.rpcStore.state.withdrawRequests
     }
 
-    public get stakingInfo(): NonNullable<Blockchain['stakeInformation']> {
+    public get stakingInfo(): NonNullable<Blockchain['stakeInformation'] & {
+        decimals: number,
+        symbol: string
+    }> {
         const group = this.rpcStore.state.selectedConnection.group
-        return this.connectionStore.connectionConfig?.blockchainsByGroup[group]?.stakeInformation || {} as NonNullable<Blockchain['stakeInformation']>
+
+        const stakeInformation = this.connectionStore.connectionConfig?.blockchainsByGroup[group]?.stakeInformation
+        const token = stakeInformation ? this.tokensStore.tokens[stakeInformation?.stakingRootContractAddress]
+            : undefined
+
+        const stakingInfo = stakeInformation ? {
+            ...stakeInformation,
+            decimals: token?.decimals,
+            symbol: token?.symbol,
+        } : {}
+
+        return stakingInfo as NonNullable<Blockchain['stakeInformation'] & {
+            decimals: number,
+            symbol: string
+        }>
+
     }
 
     public get stakingAvailable(): boolean {
@@ -82,6 +102,7 @@ export class StakeStore {
         return this.rpcStore.rpc.getDepositStEverAmount(evers)
     }
 
+
     public getWithdrawEverAmount(stevers: string): Promise<string> {
         return this.rpcStore.rpc.getWithdrawEverAmount(stevers)
     }
@@ -108,6 +129,43 @@ export class StakeStore {
     public encodeDepositPayload(): Promise<string> {
         return this.rpcStore.rpc.encodeDepositPayload()
     }
+
+    public async computeFees() {
+        const info = this.stakingInfo
+        if (!info) {
+            return {
+                depositAttachedFee: '0',
+                removePendingWithdrawAttachedFee: '0',
+                withdrawAttachedFee: '0',
+            }
+        }
+
+        // if (networkType.isTycho) {
+        const price = await this.rpcStore.rpc.getPrice()
+
+        return {
+            depositAttachedFee: await this.rpcStore.rpc.computeGas({
+                dynamicGas: info.stakeDepositAttachedFee,
+                params: price,
+            }),
+            removePendingWithdrawAttachedFee: await this.rpcStore.rpc.computeGas({
+                dynamicGas: info.stakeRemovePendingWithdrawAttachedFee,
+                params: price,
+            }),
+            withdrawAttachedFee: await this.rpcStore.rpc.computeGas({
+                dynamicGas: info.stakeWithdrawAttachedFee,
+                params: price,
+            }),
+        }
+
+
+        // return {
+        //     depositAttachedFee: info.stakeDepositAttachedFee,
+        //     removePendingWithdrawAttachedFee: info.stakeRemovePendingWithdrawAttachedFee,
+        //     withdrawAttachedFee: info.stakeWithdrawAttachedFee,
+        // }
+    }
+
 
     private async fetchInfo() {
         if (!this.stakingInfo.stakingAPYLink) return

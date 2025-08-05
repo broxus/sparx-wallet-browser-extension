@@ -5,8 +5,8 @@ import { inject, injectable } from 'tsyringe'
 import type { FormEvent } from 'react'
 
 import type { Nekoton, StEverVaultDetails } from '@app/models'
-import { AccountabilityStore, ConnectionStore, Logger, NekotonToken, StakeStore, Utils } from '@app/popup/modules/shared'
-import { amountPattern, parseCurrency, parseEvers } from '@app/shared'
+import { AccountabilityStore, ConnectionStore, Logger, NekotonToken, RpcStore, StakeStore, Utils } from '@app/popup/modules/shared'
+import { amountPattern, parseCurrency } from '@app/shared'
 
 import type { StakeFromData } from '../StakePrepareMessage/StakePrepareMessageViewModel'
 import { StakeTransferStore } from '../../store'
@@ -16,6 +16,8 @@ export class StakeFormViewModel {
 
     public onSubmit!: (data: StakeFromData) => void
 
+    public onError!: (error: string) => void
+
     public loading = false
 
     public amount = ''
@@ -24,16 +26,21 @@ export class StakeFormViewModel {
 
     public depositStEverAmount = '0'
 
+    public depositAttachedFee = '0'
+
     constructor(
         private transfer: StakeTransferStore,
         @inject(NekotonToken) private nekoton: Nekoton,
         private accountability: AccountabilityStore,
         private stakeStore: StakeStore,
+        private rpcStore: RpcStore,
         private logger: Logger,
         private utils: Utils,
         private connectionStore: ConnectionStore,
     ) {
         makeAutoObservable(this, undefined, { autoBind: true })
+
+        this.depositAttachedFee = this.stakingInfo.stakeDepositAttachedFee
 
         if (transfer.messageParams?.originalAmount !== '0') {
             this.amount = transfer.messageParams?.originalAmount ?? ''
@@ -48,6 +55,12 @@ export class StakeFormViewModel {
             catch {}
 
             this.estimateDepositStEverAmount(amount).catch(logger.error)
+
+            this.estimateFee()
+        })
+
+        utils.autorun(() => {
+            this.onError(this.error || '')
         })
     }
 
@@ -77,7 +90,7 @@ export class StakeFormViewModel {
         const { stEverSupply, totalAssets } = this.stakeDetails
         const stEverToEverRate = new BigNumber(stEverSupply).div(totalAssets)
 
-        return new BigNumber(1).div(stEverToEverRate).toFixed(4)
+        return new BigNumber(1).div(BigNumber(1).div(stEverToEverRate)).toFixed(4)
     }
 
     public get everWalletState(): nt.ContractState | undefined {
@@ -97,11 +110,7 @@ export class StakeFormViewModel {
     }
 
     public get maxAmount(): string {
-        return this.balance
-            .minus(this.stakingInfo.stakeDepositAttachedFee)
-            .minus(parseEvers('0.1')) // blockchain fee
-            .minus(parseEvers('5')) // unstack amount 
-            .toFixed()
+        return BigNumber.max(this.balance.minus(this.depositAttachedFee.toString()), 0).toString()
     }
 
     public get decimals(): number {
@@ -188,6 +197,19 @@ export class StakeFormViewModel {
 
             runInAction(() => {
                 this.depositStEverAmount = amount
+            })
+        }
+        catch (e) {
+            this.logger.error(e)
+        }
+    }
+
+    private async estimateFee(): Promise<void> {
+        try {
+            const { depositAttachedFee } = await this.stakeStore.computeFees()
+
+            runInAction(() => {
+                this.depositAttachedFee = depositAttachedFee
             })
         }
         catch (e) {

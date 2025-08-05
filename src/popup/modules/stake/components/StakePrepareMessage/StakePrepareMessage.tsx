@@ -16,7 +16,7 @@ import { StakeTutorial } from '../StakeTutorial'
 export const StakePrepareMessage = observer((): JSX.Element => {
     const vm = useViewModel(StakePrepareMessageViewModel)
     const intl = useIntl()
-    const [isOpenInfo, setIsOpenInfo] = useState(false)
+    const [isOpenInfo, setIsOpenInfo] = useState(vm.isOpenInfo)
 
     return (
         <>
@@ -64,10 +64,10 @@ export const StakePrepareMessage = observer((): JSX.Element => {
                     </Tabs>
 
                     {vm.tab.is(Tab.Stake) && (
-                        <StakeForm onSubmit={vm.submitMessageParams} />
+                        <StakeForm onSubmit={vm.submitMessageParams} onError={vm.onError} />
                     )}
                     {vm.tab.is(Tab.Unstake) && (
-                        <UnstakeForm onSubmit={vm.submitMessageParams} />
+                        <UnstakeForm onSubmit={vm.submitMessageParams} onError={vm.onError} />
                     )}
                     {vm.tab.is(Tab.InProgress) && (
                         <WithdrawRequestList onRemove={vm.removePendingWithdraw} />
@@ -88,7 +88,7 @@ export const StakePrepareMessage = observer((): JSX.Element => {
                         <FooterAction>
                             <Button
                                 width={232} form="stake" type="submit"
-                                disabled={!vm.transfer.key || vm.isMultisigLimit}
+                                disabled={!vm.transfer.key || vm.isMultisigLimit || !!vm.error}
                             >
                                 {vm.tab.is(Tab.Stake)
                                     ? intl.formatMessage({ id: 'STAKE_BTN_TEXT' })
@@ -99,7 +99,11 @@ export const StakePrepareMessage = observer((): JSX.Element => {
 
                 </Footer>
             </Container>
-            <StakeTutorial onClose={() => setIsOpenInfo(false)} active={isOpenInfo} symbol={vm.stSymbol} />
+            <StakeTutorial
+                stTokenRoot={vm.stEverTokenRoot}
+                onClose={() => setIsOpenInfo(false)}
+                active={isOpenInfo} symbol={vm.currencyName} receiveSymbol={vm.stSymbol}
+            />
         </>
     )
 })
