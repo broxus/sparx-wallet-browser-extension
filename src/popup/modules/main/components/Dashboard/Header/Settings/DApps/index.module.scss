@@ -1,0 +1,80 @@
+@use '../../../../../../../styles';
+
+.description {
+    @include text_m
+}
+
+.item {
+    height: 54px;
+    display: flex;
+    gap: 14px;
+    padding: 0 16px;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.info {
+   display: flex;
+   align-items: center;
+   gap: 14px;
+   max-width: 100%;
+   min-width: 0;
+}
+
+.block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.img {
+    border-radius: 100%;
+}
+
+.button {
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 24px;
+    width: max-content;
+    flex-shrink: 0;
+}
+
+.border {
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.name {
+    @include styles.ellipsis;
+    @include label_m;
+    color: $text-primary;
+}
+
+.origin {
+    @include styles.ellipsis;
+    @include text-add-regular;
+    color: $text-secondary;
+}
+
+.unplug {
+    padding: 15px;
+    border-radius: 100%;
+    background: $bg-layer-2;
+    margin-top: 30px;
+}
+
+.title {
+    @include heading_s;
+}
+
+.card {
+  text-align: center;
+  padding: 20px 0 0;
+}
+
+.alert {
+    margin-top: 30px;
+}

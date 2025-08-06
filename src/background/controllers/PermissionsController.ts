@@ -1,9 +1,10 @@
-import type { Permission, ProviderEvent, RawPermissions, RawProviderEventData } from 'everscale-inpage-provider'
+import type { Permission, RawPermissions } from 'everscale-inpage-provider'
 import browser from 'webextension-polyfill'
 import isEqual from 'lodash.isequal'
 import log from 'loglevel'
 
 import { NekotonRpcError, RpcErrorCode } from '@app/shared'
+import { ProviderEvent, RawProviderEventData } from '@app/models'
 
 import { Deserializers, Storage } from '../utils/Storage'
 import { ApprovalController } from './ApprovalController'

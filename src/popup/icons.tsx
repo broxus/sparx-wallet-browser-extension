@@ -1,6 +1,7 @@
 /* eslint-disable */
 import type { ReactNode } from 'react'
 import AddUser from '@app/popup/assets/icons/add-user.svg'
+import Alert from '@app/popup/assets/icons/alert.svg'
 import ArrowDown from '@app/popup/assets/icons/arrow-down.svg'
 import ArrowIn from '@app/popup/assets/icons/arrow-in.svg'
 import ArrowLeft from '@app/popup/assets/icons/arrow-left.svg'
@@ -23,6 +24,7 @@ import Copy from '@app/popup/assets/icons/copy.svg'
 import CrossCircle from '@app/popup/assets/icons/cross-circle.svg'
 import Cross from '@app/popup/assets/icons/cross.svg'
 import Currency from '@app/popup/assets/icons/currency.svg'
+import Database from '@app/popup/assets/icons/database.svg'
 import Delete from '@app/popup/assets/icons/delete.svg'
 import Discord from '@app/popup/assets/icons/discord.svg'
 import Dots from '@app/popup/assets/icons/dots.svg'
@@ -40,6 +42,7 @@ import Info from '@app/popup/assets/icons/info.svg'
 import KeyRound from '@app/popup/assets/icons/key-round.svg'
 import Key from '@app/popup/assets/icons/key.svg'
 import Ledger from '@app/popup/assets/icons/ledger.svg'
+import Link from '@app/popup/assets/icons/link.svg'
 import Linkedin from '@app/popup/assets/icons/linkedin.svg'
 import List from '@app/popup/assets/icons/list.svg'
 import LoaderLarge from '@app/popup/assets/icons/loader-large.svg'
@@ -50,6 +53,8 @@ import Logo from '@app/popup/assets/icons/logo.svg'
 import Logout from '@app/popup/assets/icons/logout.svg'
 import Medium from '@app/popup/assets/icons/medium.svg'
 import Menu from '@app/popup/assets/icons/menu.svg'
+import MessageCircle from '@app/popup/assets/icons/message-circle.svg'
+import MessageSquare from '@app/popup/assets/icons/message-square.svg'
 import Message from '@app/popup/assets/icons/message.svg'
 import Minus from '@app/popup/assets/icons/minus.svg'
 import Pending from '@app/popup/assets/icons/pending.svg'
@@ -71,6 +76,7 @@ import Telegram from '@app/popup/assets/icons/telegram.svg'
 import Time from '@app/popup/assets/icons/time.svg'
 import TriangleAlert from '@app/popup/assets/icons/triangle-alert.svg'
 import Twitter from '@app/popup/assets/icons/twitter.svg'
+import Unplug from '@app/popup/assets/icons/unplug.svg'
 import UsersRound from '@app/popup/assets/icons/users-round.svg'
 import Users from '@app/popup/assets/icons/users.svg'
 import Wallet from '@app/popup/assets/icons/wallet.svg'
@@ -81,6 +87,7 @@ import Zoom from '@app/popup/assets/icons/zoom.svg'
 // GENERATED CODE - DO NOT MODIFY BY HAND
 export class Icons {
 public static readonly addUser: ReactNode = <AddUser />
+public static readonly alert: ReactNode = <Alert />
 public static readonly arrowDown: ReactNode = <ArrowDown />
 public static readonly arrowIn: ReactNode = <ArrowIn />
 public static readonly arrowLeft: ReactNode = <ArrowLeft />
@@ -103,6 +110,7 @@ public static readonly copy: ReactNode = <Copy />
 public static readonly crossCircle: ReactNode = <CrossCircle />
 public static readonly cross: ReactNode = <Cross />
 public static readonly currency: ReactNode = <Currency />
+public static readonly database: ReactNode = <Database />
 public static readonly delete: ReactNode = <Delete />
 public static readonly discord: ReactNode = <Discord />
 public static readonly dots: ReactNode = <Dots />
@@ -120,6 +128,7 @@ public static readonly info: ReactNode = <Info />
 public static readonly keyRound: ReactNode = <KeyRound />
 public static readonly key: ReactNode = <Key />
 public static readonly ledger: ReactNode = <Ledger />
+public static readonly link: ReactNode = <Link />
 public static readonly linkedin: ReactNode = <Linkedin />
 public static readonly list: ReactNode = <List />
 public static readonly loaderLarge: ReactNode = <LoaderLarge />
@@ -130,6 +139,8 @@ public static readonly logo: ReactNode = <Logo />
 public static readonly logout: ReactNode = <Logout />
 public static readonly medium: ReactNode = <Medium />
 public static readonly menu: ReactNode = <Menu />
+public static readonly messageCircle: ReactNode = <MessageCircle />
+public static readonly messageSquare: ReactNode = <MessageSquare />
 public static readonly message: ReactNode = <Message />
 public static readonly minus: ReactNode = <Minus />
 public static readonly pending: ReactNode = <Pending />
@@ -151,6 +162,7 @@ public static readonly telegram: ReactNode = <Telegram />
 public static readonly time: ReactNode = <Time />
 public static readonly triangleAlert: ReactNode = <TriangleAlert />
 public static readonly twitter: ReactNode = <Twitter />
+public static readonly unplug: ReactNode = <Unplug />
 public static readonly usersRound: ReactNode = <UsersRound />
 public static readonly users: ReactNode = <Users />
 public static readonly wallet: ReactNode = <Wallet />

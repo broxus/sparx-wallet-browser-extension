@@ -26,6 +26,12 @@ interface TonConnectionsStorage {
     connections: { [origin: string]: TonConnection };
 }
 
+type DappInfo = {
+  url: string,
+  name: string,
+  iconUrl: string,
+}
+
 
 interface TonConnectionsState extends BaseState {
     connections: { [origin: string]: TonConnection };
@@ -52,7 +58,6 @@ export class TonConnectionsController extends BaseController<TonConnectionsConfi
             const connections = this.config.storage.snapshot.connections ?? {}
 
             this.update({ connections })
-
 
             this._subscribeOnStorageChanged()
         }
@@ -105,9 +110,41 @@ export class TonConnectionsController extends BaseController<TonConnectionsConfi
         }
     }
 
-    public async removeTonOrigin(origin: string) {
+    public async getConnectedDAppsInfo() {
+        const getInfo = async (manifestUrl:string) => {
+            try {
+                const result = await fetch(manifestUrl)
+                const responce = await result.json() as DappInfo
+
+                return responce
+            }
+            catch (error) {
+                return null
+            }
+        }
+
+        const origins = Object.keys(this.state.connections)
+
+        const result = await Promise.all(Object.values(this.state.connections).map((item) => getInfo(item.manifest)))
+
+        return result.map((item, i) => ({
+            ...(item || {}),
+            origin: origins[i],
+        }))
+
+    }
+
+    public async removeTonOrigin(origin: string | string[]) {
         const connections = { ...this.state.connections }
-        delete connections[origin]
+
+        if (Array.isArray(origin)) {
+            origin.forEach((el) => {
+                delete connections[el]
+            })
+        }
+        else {
+            delete connections[origin]
+        }
 
         await this._updateConnections(connections)
     }

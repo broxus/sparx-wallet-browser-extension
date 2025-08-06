@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events'
-import type { ProviderEvent, RawProviderEventData } from 'everscale-inpage-provider'
 import debounce from 'lodash.debounce'
 import { nanoid } from 'nanoid'
 import type { ClockWithOffset } from 'nekoton-wasm'
@@ -8,7 +7,7 @@ import pump from 'pump'
 import { Duplex } from 'readable-stream'
 import log from 'loglevel'
 
-import { StandaloneNekoton } from '@app/models'
+import { ProviderEvent, StandaloneNekoton, RawProviderEventData } from '@app/models'
 import {
     ConnectionConfig,
     createEngineStream,
@@ -150,6 +149,9 @@ export class StandaloneController extends EventEmitter {
         })
 
         this._components.jrpcClient.onNotification(async (data) => {
+            if (data.method === 'tonDisconnected') {
+                await this._removeDapp((data.params as any).origins as string[])
+            }
             if (data.method === 'loggedOut') {
                 await this._logOut()
             }
@@ -204,6 +206,14 @@ export class StandaloneController extends EventEmitter {
             method: 'loggedOut',
             params: {},
         })
+    }
+
+    private async _removeDapp(origins: string[]) {
+        origins.forEach((origin) => {
+            this._notifyConnections(origin, { method: 'tonDisconnected', params: undefined })
+        })
+
+        this._sendUpdate()
     }
 
     private async _changeNetwork(connectionId: string) {

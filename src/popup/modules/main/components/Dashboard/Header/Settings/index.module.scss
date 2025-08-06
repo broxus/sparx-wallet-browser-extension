@@ -19,6 +19,12 @@
     color: $chip-error-text;
 }
 
+.icon {
+    width: 16px;
+    height: 16px;
+    color: styles.$text-contrast;
+}
+
 .content {
     border-radius: 10px;
     background: $button-transparency-bg;
@@ -34,10 +40,13 @@
     margin-right: 24px;
 
     .list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
         padding: 4px;
 
 
-        button {
+        button, a {
             &:hover {
                 background: $button-transparency-bg-hover;
             }
@@ -45,6 +54,7 @@
     }
 
     .item {
+        font-family: 'Inter';
         @include label_m;
         display: flex;
         align-items: center;
@@ -87,3 +97,7 @@
 }
 
 
+.line {
+    background-color: $global-colors-transparency-t-12;
+    margin: 0 8px;
+}

@@ -1,6 +1,5 @@
 import type * as nt from '@broxus/ever-wallet-wasm'
 import { EventEmitter } from 'events'
-import type { ProviderEvent, RawProviderEventData } from 'everscale-inpage-provider'
 import debounce from 'lodash.debounce'
 import { nanoid } from 'nanoid'
 import ObjectMultiplex from 'obj-multiplex'
@@ -10,7 +9,7 @@ import browser from 'webextension-polyfill'
 import log from 'loglevel'
 
 import { ConnectionConfig, createEngineStream, createMetaRPCHandler, focusTab, focusWindow, JsonRpcEngine, JsonRpcMiddleware, NEKOTON_CONTROLLER, NEKOTON_PROVIDER, nodeifyAsync, openExtensionInBrowser, PHISHING, PHISHING_SAFELIST } from '@app/shared'
-import type { ConnectionDataItem, ExternalWindowParams, Nekoton, PendingApprovalInfo, RpcEvent, TriggerUiParams, WalletMessageToSend, WindowInfo } from '@app/models'
+import type { ConnectionDataItem, ExternalWindowParams, Nekoton, PendingApprovalInfo, ProviderEvent, RpcEvent, TriggerUiParams, WalletMessageToSend, WindowInfo, RawProviderEventData } from '@app/models'
 import { createHelperMiddleware } from '@app/background/middleware/helperMiddleware'
 
 import { LedgerBridge, LedgerConnector, LedgerRpcClient } from '../ledger'
@@ -59,6 +58,7 @@ interface NekotonControllerComponents {
     gasController: GasController;
     nftController: NftController;
     ledgerRpcClient: LedgerRpcClient;
+    tonConnectionsController: TonConnectionsController;
     storage: Storage;
 }
 
@@ -163,7 +163,7 @@ export class NekotonController extends EventEmitter {
             storage,
         })
 
-        const connectionsController = new TonConnectionsController({
+        const tonConnectionsController = new TonConnectionsController({
             storage,
         })
 
@@ -202,7 +202,7 @@ export class NekotonController extends EventEmitter {
         await storage.load()
 
         localizationController.initialSync()
-        connectionsController.initialSync()
+        tonConnectionsController.initialSync()
         permissionsController.initialSync()
         stakeController.initialSync()
         phishingController.initialSync()
@@ -236,6 +236,7 @@ export class NekotonController extends EventEmitter {
             nftController,
             ledgerRpcClient,
             contactsController,
+            tonConnectionsController,
             storage,
             gasController,
         })
@@ -343,6 +344,7 @@ export class NekotonController extends EventEmitter {
             stakeController,
             nftController,
             contactsController,
+            tonConnectionsController,
             gasController,
         } = this._components
 
@@ -409,6 +411,7 @@ export class NekotonController extends EventEmitter {
             changeNetwork: nodeifyAsync(this, 'changeNetwork'),
             importStorage: nodeifyAsync(this, 'importStorage'),
             exportStorage: nodeifyAsync(this, 'exportStorage'),
+            deleteDapps: nodeifyAsync(this, 'deleteDapps'),
             checkPassword: nodeifyAsync(accountController, 'checkPassword'),
             isPasswordCached: nodeifyAsync(accountController, 'isPasswordCached'),
             createMasterKey: nodeifyAsync(accountController, 'createMasterKey'),
@@ -507,6 +510,8 @@ export class NekotonController extends EventEmitter {
             updateCustomNetwork: nodeifyAsync(connectionController, 'updateCustomNetwork'),
             deleteCustomNetwork: nodeifyAsync(connectionController, 'deleteCustomNetwork'),
             resetCustomNetworks: nodeifyAsync(connectionController, 'resetCustomNetworks'),
+            getConnectedDAppsInfo: nodeifyAsync(tonConnectionsController, 'getConnectedDAppsInfo'),
+            removeTonOrigin: nodeifyAsync(tonConnectionsController, 'removeTonOrigin'),
             getConnectionConfig: (cb: ApiCallback<ConnectionConfig>) => {
                 cb(null, connectionController.connectionConfig)
             },
@@ -530,6 +535,7 @@ export class NekotonController extends EventEmitter {
             ...this._components.stakeController.state,
             ...this._components.nftController.state,
             ...this._components.contactsController.state,
+            ...this._components.tonConnectionsController.state,
         }
     }
 
@@ -543,6 +549,19 @@ export class NekotonController extends EventEmitter {
         const { [key]: value } = await browser.storage.local.get(key)
         await browser.storage.local.remove(key)
         return value
+    }
+
+    public async deleteDapps(origins: string[]):Promise<void> {
+        origins.forEach((origin) => {
+            this._notifyConnections(origin, {
+                method: 'tonDisconnected',
+                params: {
+                    origins,
+                } as any,
+            })
+        })
+
+        this._sendUpdate()
     }
 
     public async changeNetwork(connectionDataItem?: ConnectionDataItem): Promise<boolean> {

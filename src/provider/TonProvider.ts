@@ -60,7 +60,11 @@ export class TonProvider implements TonConnectBridge {
 
     isWalletBrowser = false
 
-    constructor(private client: Client) { }
+    constructor(private client: Client) {
+        client.on('tonDisconnected', () => {
+            this.disconnect()
+        })
+    }
 
     connect = async (protocolVersion: number, message: TonConnectRequest): Promise<TonWalletResponse<'connect'>> => {
         if (protocolVersion > this.protocolVersion) {
