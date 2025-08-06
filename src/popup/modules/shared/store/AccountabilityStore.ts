@@ -465,6 +465,46 @@ export class AccountabilityStore {
         })
     }
 
+    public async updateExistingWallets(
+        publicKey: string,
+        contractTypes = getContractTypes(this.connectionStore.connectionConfig),
+    ) {
+        let accounts: nt.AssetsList[] = []
+        let existingWallets: nt.ExistingWalletInfo[] = []
+
+        try {
+            existingWallets = await this.rpcStore.rpc.findExistingWallets({
+                publicKey,
+                contractTypes,
+                workchainId: 0,
+            })
+            const accountsToAdd = existingWallets
+                .filter((wallet) => wallet.contractState.isDeployed || wallet.contractState.balance !== '0')
+                .map<nt.AccountToAdd>((wallet) => ({
+                    name: getContractName(
+                        wallet.contractType,
+                        this.connectionStore.selectedConnectionNetworkGroup,
+                        this.connectionStore.connectionConfig,
+                    ),
+                    publicKey: wallet.publicKey,
+                    contractType: wallet.contractType,
+                    workchain: 0,
+                }))
+
+            if (accountsToAdd.length) {
+                accounts = await this.rpcStore.rpc.createAccounts(accountsToAdd)
+            }
+        }
+        catch (e) {
+            this.logger.error(e)
+        }
+
+        return {
+            all: existingWallets,
+            added: accounts,
+        }
+    }
+
     public async addExistingWallets(
         publicKey: string,
         contractTypes = getContractTypes(this.connectionStore.connectionConfig),

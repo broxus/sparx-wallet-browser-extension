@@ -132,6 +132,7 @@
     "ADD_ACCOUNT_BTN_TEXT": "계정 추가",
     "CREATE_ACCOUNT_BTN_TEXT": "계정 만들기",
     "EXPORT_SEED_BTN_TEXT": "시드키 내보내기",
+     "SCAN_SEED": "Scan seed",
     "RECEIVE_BTN_TEXT": "받기",
     "SEND_BTN_TEXT": "보내기",
     "DEPLOY_BTN_TEXT": "활성화",

@@ -160,6 +160,7 @@
     "ADD_ACCOUNT_BTN_TEXT": "アカウント追加",
     "CREATE_ACCOUNT_BTN_TEXT": "アカウント作成",
     "EXPORT_SEED_BTN_TEXT": "シードをエクスポート",
+     "SCAN_SEED": "Scan seed",
     "RECEIVE_BTN_TEXT": "受け取り",
     "SEND_BTN_TEXT": "送信",
     "DEPLOY_BTN_TEXT": "デプロイ",

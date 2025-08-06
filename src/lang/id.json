@@ -152,6 +152,7 @@
     "ADD_ACCOUNT_BTN_TEXT": "Tambahkan akun",
     "CREATE_ACCOUNT_BTN_TEXT": "Buat akun",
     "EXPORT_SEED_BTN_TEXT": "Ekspor seed",
+     "SCAN_SEED": "Scan seed",
     "RECEIVE_BTN_TEXT": "Terima",
     "SEND_BTN_TEXT": "Kirim",
     "DEPLOY_BTN_TEXT": "Luncurkan",

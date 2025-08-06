@@ -15,6 +15,7 @@ import { DeleteSeed } from '../DeleteSeed'
 import { ManageSeedViewModel } from './ManageSeedViewModel'
 import { KeyListItem } from './KeyListItem'
 import styles from './ManageSeed.module.scss'
+import { ScanSeed } from '../ScanSeed'
 
 export const ManageSeed = observer((): JSX.Element | null => {
     const vm = useViewModel(ManageSeedViewModel)
@@ -32,6 +33,10 @@ export const ManageSeed = observer((): JSX.Element | null => {
     })
     const handleDelete = () => vm.panel.open({
         render: () => <DeleteSeed keyEntry={vm.currentMasterKey!} onDeleted={vm.onSeedDeleted} />,
+    })
+    const handleScan = () => vm.panel.open({
+        render: () => <ScanSeed />,
+        title: intl.formatMessage({ id: 'PASSWORD_FORM_HEADER' }),
     })
 
     if (!vm.currentMasterKey) return null
@@ -59,6 +64,10 @@ export const ManageSeed = observer((): JSX.Element | null => {
                                     {intl.formatMessage({ id: 'EXPORT_SEED_BTN_TEXT' })}
                                 </MenuItem>
                             )}
+                            <MenuItem onClick={handleScan}>
+                                <Icon icon="search" width={16} height={16} />
+                                {intl.formatMessage({ id: 'SCAN_SEED' })}
+                            </MenuItem>
                             {vm.currentMasterKey.signerName !== 'ledger_key' && (
                                 <MenuItem onClick={handleChangePwd}>
                                     <Icon icon="lock" width={16} height={16} />

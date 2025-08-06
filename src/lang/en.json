@@ -186,6 +186,7 @@
     "CREATE_ACCOUNT_WALLET_TYPE_ALERT": "If you want to create the recommended wallet type, create a new public key.",
     "CREATE_ACCOUNT_WALLET_DEPRECATED_HINT": "We do not recommend using old contract types to create new accounts",
     "EXPORT_SEED_BTN_TEXT": "Export seed phrase",
+    "SCAN_SEED": "Scan seed",
     "RECEIVE_BTN_TEXT": "Receive",
     "SEND_BTN_TEXT": "Send",
     "INFO_BTN_TEXT": "Info",

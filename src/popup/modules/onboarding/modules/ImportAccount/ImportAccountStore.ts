@@ -17,6 +17,8 @@ export class ImportAccountStore {
 
     private seed: nt.GeneratedMnemonic | undefined = undefined
 
+    private wordsCount: number = 12
+
     private userMnemonic: UserMnemonic | undefined = undefined
 
     constructor(
@@ -44,6 +46,7 @@ export class ImportAccountStore {
             const phrase = words.join(' ')
             this.seed = { phrase, mnemonicType }
             this.userMnemonic = userMnemonic
+            this.wordsCount = words.length
         }
         finally {
             runInAction(() => {
@@ -52,53 +55,60 @@ export class ImportAccountStore {
         }
     }
 
-    // TODO: it doesn't work well, needs some improvement
-    // private async importSeed(key: nt.KeyStoreEntry, password:string, name: string) {
-    //     const rawPublicKeys = await this.rpcStore.rpc.getPublicKeys({
-    //         type: 'master_key',
-    //         data: {
-    //             password,
-    //             offset: 0,
-    //             limit: 10,
-    //             masterKey: key.masterKey,
-    //         },
-    //     })
+    private async importSeed(key: nt.KeyStoreEntry, password:string, name: string) {
+        const masterAccounts = await this.accountability.addExistingWallets(key.publicKey)
 
-    //     const paramsToCreate = rawPublicKeys.map((_, i) => ({
-    //         accountId: i + 1,
-    //         masterKey: key.masterKey,
-    //         password,
-    //     }))
+        if (!masterAccounts.length) {
+            await this.rpcStore.rpc.createAccount({
+                name,
+                contractType: getDefaultContractType(
+                    this.connectionStore.selectedConnectionNetworkGroup,
+                    this.connectionStore.connectionConfig,
+                ),
+                publicKey: key.publicKey,
+                workchain: 0,
+            }, true)
 
-    //     const masterAccounts = await this.accountability.addExistingWallets(key.publicKey)
+            await this.rpcStore.rpc.ensureAccountSelected()
 
-    //     if (!masterAccounts.length) {
-    //         await this.rpcStore.rpc.createAccount({
-    //             name,
-    //             contractType: getDefaultContractType(this.connectionStore.selectedConnectionNetworkType),
-    //             publicKey: key.publicKey,
-    //             workchain: 0,
-    //         }, true)
+            return
+        }
 
-    //         await this.rpcStore.rpc.ensureAccountSelected()
+        if (this.wordsCount === 24) {
+            await this.rpcStore.rpc.ensureAccountSelected()
+            return
+        }
 
-    //         return
-    //     }
 
-    //     for (const param of paramsToCreate) {
-    //         const key = await this.rpcStore.rpc.createDerivedKey(param)
-    //         const accounts = await this.accountability.addExistingWallets(key.publicKey)
+        const rawPublicKeys = await this.rpcStore.rpc.getPublicKeys({
+            type: 'master_key',
+            data: {
+                password,
+                offset: 0,
+                limit: 10,
+                masterKey: key.masterKey,
+            },
+        })
 
-    //         if (!accounts.length) {
-    //             await this.rpcStore.rpc.removeKey(key)
-    //         }
-    //         else {
-    //             break
-    //         }
-    //     }
 
-    //     await this.rpcStore.rpc.ensureAccountSelected()
-    // }
+        const paramsToCreate = rawPublicKeys.map((_, i) => ({
+            accountId: i + 1,
+            masterKey: key.masterKey,
+            password,
+        }))
+
+        for (const param of paramsToCreate) {
+            const key = await this.rpcStore.rpc.createDerivedKey(param)
+            const accounts = await this.accountability.addExistingWallets(key.publicKey)
+
+            if (!accounts.length) {
+                await this.rpcStore.rpc.removeKey(key)
+                break
+            }
+        }
+
+        await this.rpcStore.rpc.ensureAccountSelected()
+    }
 
     public async submit(accName: string, password: string): Promise<void> {
         if (this.loading) return
@@ -124,21 +134,8 @@ export class ImportAccountStore {
                 this.userMnemonic,
             )
 
-            const accounts = await this.accountability.addExistingWallets(key.publicKey)
+            this.importSeed(key, password, accName)
 
-            if (!accounts.length) {
-                await this.rpcStore.rpc.createAccount({
-                    name: accName,
-                    contractType: getDefaultContractType(
-                        this.connectionStore.selectedConnectionNetworkGroup,
-                        this.connectionStore.connectionConfig,
-                    ),
-                    publicKey: key.publicKey,
-                    workchain: 0,
-                }, true)
-            }
-
-            await this.rpcStore.rpc.ensureAccountSelected()
         }
         catch (e: any) {
             if (key) {

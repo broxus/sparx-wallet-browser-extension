@@ -241,7 +241,7 @@ module.exports = [
                 {
                     test: /\.riv$/,
                     type: 'asset/resource',
-                  },
+                },
             ],
         },
 
