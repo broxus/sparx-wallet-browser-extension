@@ -89,6 +89,7 @@ export class StakePrepareMessageViewModel {
     }
 
     public handleTabChange(tab: Tab): void {
+        this.error = ''
         this.transfer.resetMessageParams()
         this.tab.setValue(tab)
     }

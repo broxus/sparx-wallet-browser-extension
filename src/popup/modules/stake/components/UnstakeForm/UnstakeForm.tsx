@@ -15,9 +15,10 @@ interface Props {
     onError(error: string): void;
 }
 
-export const UnstakeForm = observer(({ onSubmit }: Props): JSX.Element => {
+export const UnstakeForm = observer(({ onSubmit, onError }: Props): JSX.Element => {
     const vm = useViewModel(UnstakeFormViewModel, (model) => {
         model.onSubmit = onSubmit
+        model.onError = onError
     })
     const intl = useIntl()
 
