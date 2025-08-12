@@ -257,23 +257,25 @@ export class CreateSeedViewModel {
             return account
         }
 
-        if (this.flow === AddSeedFlow.ImportLegacy) {
-            return masterAccounts[0]
-        }
-
 
         let account = null
-        for (const param of paramsToCreate) {
-            const key = await this.rpcStore.rpc.createDerivedKey(param)
-            const accounts = await this.accountability.addExistingWallets(key.publicKey)
 
-            if (!!accounts.length && !account) account = accounts[0]
+        try {
+            for (const param of paramsToCreate) {
+                const key = await this.rpcStore.rpc.createDerivedKey(param)
+                const accounts = await this.accountability.addExistingWallets(key.publicKey)
 
-            if (!accounts.length) {
-                await this.rpcStore.rpc.removeKey(key)
-                break
+                if (!!accounts.length && !account) account = accounts[0]
+
+                if (!accounts.length) {
+                    await this.rpcStore.rpc.removeKey(key)
+                    break
+                }
+
             }
-
+        }
+        catch (error) {
+            account = masterAccounts[0]
         }
 
         return account

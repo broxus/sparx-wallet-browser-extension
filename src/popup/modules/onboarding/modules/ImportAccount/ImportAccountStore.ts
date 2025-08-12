@@ -74,40 +74,44 @@ export class ImportAccountStore {
             return
         }
 
-        if (this.wordsCount === 24) {
-            await this.rpcStore.rpc.ensureAccountSelected()
-            return
-        }
+
+        try {
+            const rawPublicKeys = await this.rpcStore.rpc.getPublicKeys({
+                type: 'master_key',
+                data: {
+                    password,
+                    offset: 0,
+                    limit: 10,
+                    masterKey: key.masterKey,
+                },
+            })
 
 
-        const rawPublicKeys = await this.rpcStore.rpc.getPublicKeys({
-            type: 'master_key',
-            data: {
-                password,
-                offset: 0,
-                limit: 10,
+            const paramsToCreate = rawPublicKeys.map((_, i) => ({
+                accountId: i + 1,
                 masterKey: key.masterKey,
-            },
-        })
+                password,
+            }))
 
+            for (const param of paramsToCreate) {
+                const key = await this.rpcStore.rpc.createDerivedKey(param)
+                const accounts = await this.accountability.addExistingWallets(key.publicKey)
 
-        const paramsToCreate = rawPublicKeys.map((_, i) => ({
-            accountId: i + 1,
-            masterKey: key.masterKey,
-            password,
-        }))
-
-        for (const param of paramsToCreate) {
-            const key = await this.rpcStore.rpc.createDerivedKey(param)
-            const accounts = await this.accountability.addExistingWallets(key.publicKey)
-
-            if (!accounts.length) {
-                await this.rpcStore.rpc.removeKey(key)
-                break
+                if (!accounts.length) {
+                    await this.rpcStore.rpc.removeKey(key)
+                    break
+                }
             }
-        }
 
-        await this.rpcStore.rpc.ensureAccountSelected()
+            await this.rpcStore.rpc.ensureAccountSelected()
+
+        }
+        catch (error) {
+            console.error(error)
+        }
+        finally {
+            await this.rpcStore.rpc.ensureAccountSelected()
+        }
     }
 
     public async submit(accName: string, password: string): Promise<void> {
