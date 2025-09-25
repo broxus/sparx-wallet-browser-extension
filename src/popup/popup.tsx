@@ -49,6 +49,9 @@ const start = async () => {
         connection.getConnectionConfig(),
     ])
 
+    const root = document.getElementById('root')
+    if (root) root.classList.remove('loader-page')
+
     if (await validateState(activeTab, state, connection)) {
         await initializeUi(
             await setup(connection, state, appConfig, connectionConfig),
@@ -206,24 +209,45 @@ const connectToBackground = (connectionStream: Duplex): {
 function showLoader() {
     const root = document.getElementById('root')
 
-    if (root) {
-        root.innerHTML = `<div class="loader-page"><img src="${LoaderSrc}" class="loader-page__spinner" alt="" /></div>`
-    }
+    if (!root) return
+
+    const newRoot = document.createElement('div')
+    newRoot.id = 'root'
+    newRoot.className = 'loader-page'
+
+    const img = document.createElement('img')
+    img.src = LoaderSrc
+    img.className = 'loader-page__spinner'
+    img.alt = ''
+
+    newRoot.appendChild(img)
+
+    root.replaceWith(newRoot)
 }
 
 function showError() {
-    const root = document.getElementById('root')
+    const oldRoot = document.getElementById('root')
 
-    if (root) {
-        root.innerHTML = '<div class="critical-error">The Nekoton app failed to load: please open and close Nekoton again to restart.</div>'
-        root.style.height = '80px'
-    }
+    if (!oldRoot) return
+
+    const newRoot = document.createElement('div')
+    newRoot.id = 'root'
+    newRoot.className = 'loader-page'
+    newRoot.style.height = '80px'
+
+    const errorDiv = document.createElement('div')
+    errorDiv.className = 'critical-error'
+    errorDiv.textContent = 'The Nekoton app failed to load: please open and close Nekoton again to restart.'
+
+    newRoot.appendChild(errorDiv)
+
+    oldRoot.replaceWith(newRoot)
 }
 
 showLoader()
 
 start()
-    .catch(error => {
+    .catch((error) => {
         showError()
         console.error(error)
     })
