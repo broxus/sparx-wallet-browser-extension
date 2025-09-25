@@ -1,6 +1,6 @@
 {
   "name": "sparx-wallet",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "SparX Wallet browser extension",
   "scripts": {
     "start": "webpack --mode=development --watch --stats-error-details --env beta",
@@ -27,7 +27,7 @@
   "license": "GNU GPL v3.0",
   "dependencies": {
     "@broxus/await-semaphore": "^0.1.5",
-    "@broxus/ever-wallet-wasm": "0.2.18",
+    "@broxus/ever-wallet-wasm": "0.3.0",
     "@rive-app/react-canvas-lite": "^4.21.4",
     "@ton/core": "^0.59.1",
     "@tonconnect/protocol": "^2.2.7",

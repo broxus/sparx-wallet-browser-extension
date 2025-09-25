@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SparX Wallet",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "SparX Wallet: your all-in-one tool for managing crypto assets via TVM networks.",
   "minimum_chrome_version": "102",
   "action": {
@@ -11,8 +11,7 @@
   "background": {
     "scripts": [
       "js/worker.js"
-    ],
-    "service_worker": "js/worker.js"
+    ]
   },
   "icons": {
     "16": "icon16.png",
