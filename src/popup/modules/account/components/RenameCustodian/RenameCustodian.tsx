@@ -6,13 +6,13 @@ import { Button, Container, Content, ErrorMessage, Footer, Form, FormControl, Hi
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
 import { convertPublicKey } from '@app/shared'
 
-import { FormValue, RenameCustodianViewModel } from './RenameCustodianViewModel'
+import { type FormValue, RenameCustodianViewModel } from './RenameCustodianViewModel'
 
 interface Props {
     publicKey: string;
 }
 
-export const RenameCustodian = observer(({ publicKey }: Props): JSX.Element | null => {
+export const RenameCustodian = observer(({ publicKey }: Props) => {
     const vm = useViewModel(RenameCustodianViewModel, (model) => {
         model.publicKey = publicKey
     }, [publicKey])
@@ -63,7 +63,9 @@ export const RenameCustodian = observer(({ publicKey }: Props): JSX.Element | nu
                         {intl.formatMessage({ id: 'BACK_BTN_TEXT' })}
                     </Button>
                     <Button
-                        design="accent" type="submit" form="rename-custodian"
+                        design="accent"
+type="submit"
+form="rename-custodian"
                         loading={vm.loading}
                     >
                         {intl.formatMessage({ id: 'CHANGE_NAME_BTN_TEXT' })}

@@ -2,8 +2,7 @@ import type * as nt from '@broxus/ever-wallet-wasm'
 import { makeAutoObservable, runInAction } from 'mobx'
 import { injectable, inject } from 'tsyringe'
 
-import type { JettonSymbol, Nekoton } from '@app/models'
-import { ConnectionDataItem, TokenWalletsToUpdate } from '@app/models'
+import { type JettonSymbol, type Nekoton, ConnectionDataItem, TokenWalletsToUpdate } from '@app/models'
 import { NekotonToken, AccountabilityStore, RpcStore, SlidingPanelHandle, Token, TokensManifest, TokensStore } from '@app/popup/modules/shared'
 import { parseError } from '@app/popup/utils'
 
@@ -40,6 +39,11 @@ export class ManageAssetsViewModel {
         return this.accountability.selectedAccount?.additionalAssets[this.selectedConnection.group]?.tokenWallets ?? []
     }
 
+    public get storageTokenWalletAssets(): nt.TokenWalletAsset[] {
+        return this.tokensStore.storageTokenWalletAssets
+            .filter(item => !this.tokenWalletAssets.find((token) => token.rootTokenContract === item.rootTokenContract))
+    }
+
     public get knownTokens(): Record<string, nt.Symbol | JettonSymbol> {
         return this.rpcStore.state.knownTokens
     }
@@ -53,6 +57,7 @@ export class ManageAssetsViewModel {
         this.loading = true
 
         try {
+            this.tokensStore.addTokensToStorage(Object.keys(params))
             await this.rpcStore.rpc.updateTokenWallets(this.accountability.selectedAccountAddress, params)
             this.handle.close()
         }

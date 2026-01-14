@@ -4,10 +4,10 @@ import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 import type { LedgerUtils } from '@app/popup/modules/ledger'
 import type { TransferMessageToPrepare, WalletMessageToSend } from '@app/models'
 
-import { Logger, Utils } from '../utils'
-import { RpcStore } from './RpcStore'
-import { AccountabilityStore, SelectableKeys } from './AccountabilityStore'
-import { LocalizationStore } from './LocalizationStore'
+import { type Logger, type Utils } from '../utils'
+import { type RpcStore } from './RpcStore'
+import { type AccountabilityStore, type SelectableKeys } from './AccountabilityStore'
+import { type LocalizationStore } from './LocalizationStore'
 
 type AdditionalKeys =
     | '_ledgerConnect'
@@ -17,6 +17,7 @@ type AdditionalKeys =
     | '_messageParams'
     | '_messageToPrepare'
     | '_fees'
+    | '_feeLoaded'
     | '_txErrors'
     | '_txErrorsLoaded'
 
@@ -38,6 +39,8 @@ export abstract class TransferStore<P> {
 
     protected _txErrorsLoaded = false
 
+    protected _feeLoaded = false
+
     private _initialized = false
 
     protected constructor(
@@ -58,6 +61,7 @@ export abstract class TransferStore<P> {
             _fees: observable,
             _txErrors: observable,
             _txErrorsLoaded: observable,
+            _feeLoaded: observable,
             initialized: computed,
             account: computed,
             key: computed,
@@ -77,9 +81,12 @@ export abstract class TransferStore<P> {
             return !!selectedAccount && !!everWalletState
         }, () => this._initialize(this.accountability.selectedAccount!, this.accountability.everWalletState!))
 
-        utils.when(() => this.initialized && !!this.selectableKeys.keys[0], () => {
-            this._key = this.selectableKeys.keys[0]
-        })
+        utils.when(
+            () => this.initialized && !!(this.selectableKeys.deployer ?? this.selectableKeys.keys.at(0)),
+            () => {
+                this._key = this.selectableKeys.deployer ?? this.selectableKeys.keys.at(0)
+            },
+        )
 
         utils.when(() => this._key?.signerName === 'ledger_key', async () => {
             const connected = await ledger.checkLedger()
@@ -98,13 +105,13 @@ export abstract class TransferStore<P> {
 
         utils.autorun(() => {
             if (this.messageToPrepare) {
-                this.estimateFees(this.messageToPrepare).catch(logger.error)
-                this.simulateTransactionTree(this.messageToPrepare).catch(logger.error)
+                this.estimateFees(this.messageToPrepare)
+                this.simulateTransactionTree(this.messageToPrepare)
             }
         })
     }
 
-    protected abstract initialize(account: nt.AssetsList, everWalletState: nt.ContractState): Promise<void> | void;
+    protected abstract initialize(account: nt.AssetsList, everWalletState: nt.ContractState): Promise<void> | void
 
     public get initialized(): boolean {
         return this._initialized
@@ -144,6 +151,10 @@ export abstract class TransferStore<P> {
 
     public get txErrorsLoaded(): boolean {
         return this._txErrorsLoaded
+    }
+
+    public get feeLoaded(): boolean {
+        return this._feeLoaded
     }
 
     public get selectableKeys(): SelectableKeys {
@@ -215,15 +226,27 @@ export abstract class TransferStore<P> {
         return this.rpcStore.rpc.sendMessage(this.account.tonWallet.address, message)
     }
 
-    protected async estimateFees(params: TransferMessageToPrepare) {
+    public async estimateFees(params: TransferMessageToPrepare) {
+        runInAction(() => {
+            this._feeLoaded = false
+        })
         try {
             const fees = await this.rpcStore.rpc.estimateFees(this.account.tonWallet.address, params, {})
+
             runInAction(() => {
+                this._feeLoaded = true
                 this._fees = fees
             })
+
+            return fees
         }
         catch (e) {
             this.logger.error(e)
+            runInAction(() => {
+                this._feeLoaded = true
+            })
+
+            return undefined
         }
     }
 

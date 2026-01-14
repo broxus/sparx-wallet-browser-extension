@@ -6,7 +6,7 @@ import { useViewModel } from '@app/popup/modules/shared'
 import { EnterSendPassword } from '../EnterSendPassword'
 import { ConfirmationPageViewModel } from './ConfirmationPageViewModel'
 
-export const ConfirmationPage = observer((): JSX.Element => {
+export const ConfirmationPage = observer(() => {
     const vm = useViewModel(ConfirmationPageViewModel)
     const navigate = useNavigate()
 
@@ -16,12 +16,14 @@ export const ConfirmationPage = observer((): JSX.Element => {
             userInfoAccount={vm.transfer.accountInfo}
             keyEntries={vm.transfer.selectableKeys.keys}
             keyEntry={vm.transfer.key!}
-            amount={vm.transfer.messageParams?.amount}
-            recipient={vm.transfer.messageParams?.recipient}
-            fees={vm.transfer.fees}
+            recipient={vm.messageParams?.recipient}
+            amount={vm.messageParams?.amount}
+            fees={vm.fees}
             error={vm.error}
-            txErrors={vm.transfer.txErrors}
-            txErrorsLoaded={vm.transfer.txErrorsLoaded}
+            feeLoaded={vm.feeLoaded}
+            isGassless={vm.isGasless}
+            txErrors={vm.txErrors}
+            txErrorsLoaded={vm.txErrorsLoaded}
             balanceError={vm.balanceError}
             loading={vm.loading}
             context={vm.context}

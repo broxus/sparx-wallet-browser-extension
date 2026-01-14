@@ -1,4 +1,4 @@
-import { Children, cloneElement, memo, PropsWithChildren, ReactElement, ReactNode } from 'react'
+import { Children, cloneElement, memo, type PropsWithChildren, type ReactElement, type ReactNode } from 'react'
 import classNames from 'classnames'
 
 import { Container, Content } from '../layout'
@@ -16,9 +16,9 @@ type ItemProps = PropsWithChildren<{
     disabled?: boolean;
     danger?: boolean;
     onClick(): void;
-}>;
+}>
 
-const SettingsMenuInternal = memo(({ title, children }: Props): JSX.Element => {
+const SettingsMenuInternal = memo(({ title, children }: Props) => {
     const handle = useResolve(SlidingPanelHandle)
 
     return (
@@ -42,7 +42,7 @@ const SettingsMenuInternal = memo(({ title, children }: Props): JSX.Element => {
     )
 })
 
-const Item = memo(({ icon, children, disabled, danger, onClick }: ItemProps): JSX.Element => (
+const Item = memo(({ icon, children, disabled, danger, onClick }: ItemProps) => (
     <Button
         design="tertiary"
         className={classNames(styles.item, { [styles._danger]: danger })}

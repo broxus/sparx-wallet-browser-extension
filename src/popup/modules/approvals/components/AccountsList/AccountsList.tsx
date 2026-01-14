@@ -2,7 +2,7 @@ import type * as nt from '@broxus/ever-wallet-wasm'
 import { observer } from 'mobx-react-lite'
 import React from 'react'
 
-import { convertEvers } from '@app/shared'
+import { convertAddress, convertEvers } from '@app/shared'
 import {
     Amount,
     Empty,
@@ -10,8 +10,9 @@ import {
     Space,
 } from '@app/popup/modules/shared'
 import { Jdenticon } from '@app/popup/modules/shared/components/Jdenticon'
+import { AccountsListItem } from '@app/popup/modules/main/components/Dashboard/AccountsList/Item'
 
-import { AccountsListViewModel } from './AccountsListViewModel'
+import { type AccountsListViewModel } from './AccountsListViewModel'
 import styles from './AccountsList.module.scss'
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
     vm: AccountsListViewModel;
 }
 
-export const AccountsList = observer(({ selectedAccount, onSelect, vm }: Props): JSX.Element => {
+export const AccountsList = observer(({ selectedAccount, onSelect, vm }: Props) => {
     const selectedRef = React.useRef<HTMLDivElement | null>(null)
 
     React.useEffect(() => {
@@ -51,25 +52,30 @@ export const AccountsList = observer(({ selectedAccount, onSelect, vm }: Props):
                             onFocus={handleFocus}
                             key={account.tonWallet.address}
                         >
-                            <div className={styles.container} ref={isSelected ? selectedRef : null}>
-                                <Jdenticon className={styles.icon} value={account.tonWallet.address} />
-                                <div className={styles.wrap}>
-                                    <div className={styles.name} title={account.name}>
-                                        {account.name}
-                                    </div>
-                                    <Amount
-                                        precise
-                                        className={styles.balance}
-                                        value={(
-                                            convertEvers(
-                                                vm.decimals,
-                                                vm.contractStates[account.tonWallet.address]?.balance,
-                                            )
-                                        )}
-                                        currency={vm.nativeCurrency}
-                                    />
-                                </div>
-                            </div>
+                            <AccountsListItem
+                                ref={isSelected ? selectedRef : null}
+                                className={styles.container}
+                                leftIcon={
+                                    <Jdenticon value={account.tonWallet.address} className={styles.icon} />
+                                }
+                                title={account.name}
+                                info={(
+                                    <>
+                                        {convertAddress(account.tonWallet.address)}
+                                        <span>•</span>
+                                        <Amount
+                                            className={styles.balance}
+                                            value={(
+                                                convertEvers(
+                                                    vm.decimals,
+                                                    vm.contractStates[account.tonWallet.address]?.balance,
+                                                )
+                                            )}
+                                            currency={vm.nativeCurrency}
+                                        />
+                                    </>
+                                )}
+                            />
                         </RadioButton>
                     )
                 },

@@ -4,7 +4,7 @@ import { inject, singleton } from 'tsyringe'
 import sortBy from 'lodash.sortby'
 import BigNumber from 'bignumber.js'
 
-import { getContractTypes, AggregatedMultisigTransactions, convertCurrency, currentUtime, getContractName, TokenWalletState, convertPublicKey, delay } from '@app/shared'
+import { getContractTypes, AggregatedMultisigTransactions, convertCurrency, currentUtime, getContractName, TokenWalletState, convertPublicKey, delay, parseAddress, isMasterchain } from '@app/shared'
 import type { ExternalAccount, Nekoton, StoredBriefMessageInfo, TokenWalletTransaction } from '@app/models'
 import { ConnectionStore } from '@app/popup/modules/shared/store/ConnectionStore'
 
@@ -109,6 +109,21 @@ export class AccountabilityStore {
     }
 
     public get accountEntries(): Record<string, nt.AssetsList | undefined> {
+        return Object.entries(this.rpcStore.state.accountEntries).reduce(
+            (acc, [key, item]) => {
+                const [workchain] = parseAddress(key)
+
+                if (workchain === this.connectionStore.selectedConnection.workchainId || isMasterchain(workchain)) {
+                    acc[key] = item
+                }
+
+                return acc
+            },
+            {} as Record<string, nt.AssetsList | undefined>,
+        )
+    }
+
+    public get allAccountEntries(): Record<string, nt.AssetsList | undefined> {
         return this.rpcStore.state.accountEntries
     }
 
@@ -404,6 +419,30 @@ export class AccountabilityStore {
         return this.rpcStore.state.accountMultisigTransactions
     }
 
+    public getStoredKey(publicKey: string): nt.KeyStoreEntry | undefined {
+        const key = this.storedKeys[publicKey]
+
+        if (key) return key
+
+        const externalPublicKey = this.externalAccounts
+            .find((item) => item.publicKey === publicKey)?.externalIn[0]
+
+        return this.storedKeys[externalPublicKey || '']
+    }
+
+    public getAccount(account: nt.AssetsList | undefined): nt.AssetsList | undefined {
+        if (!account) return undefined
+
+        return {
+            ...account,
+            tonWallet: {
+                ...account.tonWallet,
+                publicKey: this.getStoredKey(account.tonWallet.publicKey)?.publicKey as string,
+            },
+        }
+    }
+
+
     public setCurrentAccountAddress(address: string | undefined): void {
         this.currentAccountAddress = address
     }
@@ -476,7 +515,7 @@ export class AccountabilityStore {
             existingWallets = await this.rpcStore.rpc.findExistingWallets({
                 publicKey,
                 contractTypes,
-                workchainId: 0,
+                workchainId: this.connectionStore.workchainId,
             })
             const accountsToAdd = existingWallets
                 .filter((wallet) => wallet.contractState.isDeployed || wallet.contractState.balance !== '0')
@@ -488,7 +527,7 @@ export class AccountabilityStore {
                     ),
                     publicKey: wallet.publicKey,
                     contractType: wallet.contractType,
-                    workchain: 0,
+                    workchain: this.connectionStore.workchainId,
                 }))
 
             if (accountsToAdd.length) {
@@ -515,7 +554,7 @@ export class AccountabilityStore {
             const existingWallets = await this.rpcStore.rpc.findExistingWallets({
                 publicKey,
                 contractTypes,
-                workchainId: 0,
+                workchainId: this.connectionStore.workchainId,
             })
             const accountsToAdd = existingWallets
                 .filter((wallet) => wallet.contractState.isDeployed || wallet.contractState.balance !== '0')
@@ -527,7 +566,7 @@ export class AccountabilityStore {
                     ),
                     publicKey: wallet.publicKey,
                     contractType: wallet.contractType,
-                    workchain: 0,
+                    workchain: this.connectionStore.workchainId,
                 }))
 
             if (accountsToAdd.length) {
@@ -574,6 +613,41 @@ export class AccountabilityStore {
         // optimistic update, prevents lag between carousel navigation and UI update
         this._selectedAccountAddress = address
         await this.rpcStore.rpc.selectAccount(address)
+    }
+
+    public async importWorkchainAccounts(id: number): Promise<void> {
+        if (this.connectionStore.workchainId !== id && this.selectedAccountAddress) {
+            const accountEntriesInNewWorkchain = Object.entries(this.allAccountEntries || {})
+                .reduce((acc, [address, item]) => {
+                    const [workchainId] = parseAddress(address)
+                    if (workchainId === id && item) {
+                        acc.add(item.tonWallet.publicKey)
+                    }
+                    return acc
+                }, new Set())
+
+            const newAccounts = Object.values(this.allAccountEntries)
+                .filter((item) => !!item && !accountEntriesInNewWorkchain
+                    .has(item.tonWallet.publicKey)) as nt.AssetsList[]
+
+
+            const accountsToAdd = Array.from(
+                newAccounts.reduce((map, wallet) => map.set(wallet.tonWallet.publicKey, {
+                    name: getContractName(
+                        wallet.tonWallet.contractType,
+                        this.connectionStore.selectedConnectionNetworkGroup,
+                        this.connectionStore.connectionConfig,
+                    ),
+                    publicKey: wallet.tonWallet.publicKey,
+                    contractType: wallet.tonWallet.contractType,
+                    workchain: id,
+                }), new Map<string, nt.AccountToAdd>()).values(),
+            )
+
+            if (accountsToAdd.length) {
+                await this.rpcStore.rpc.createAccounts(accountsToAdd)
+            }
+        }
     }
 
 

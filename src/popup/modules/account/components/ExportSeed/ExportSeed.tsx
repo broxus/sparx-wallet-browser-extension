@@ -14,7 +14,7 @@ interface Props {
     keyEntry: nt.KeyStoreEntry;
 }
 
-export const ExportSeed = observer(({ keyEntry }: Props): JSX.Element => {
+export const ExportSeed = observer(({ keyEntry }: Props) => {
     const vm = useViewModel(ExportSeedViewModel, (model) => {
         model.keyEntry = keyEntry
     })
@@ -60,7 +60,9 @@ export const ExportSeed = observer(({ keyEntry }: Props): JSX.Element => {
                     <Footer>
                         <FooterAction>
                             <Button
-                                design="accent" type="submit" form="password-request"
+                                design="accent"
+type="submit"
+form="password-request"
                                 loading={vm.loading}
                             >
                                 {intl.formatMessage({ id: 'CONFIRM_BTN_TEXT' })}

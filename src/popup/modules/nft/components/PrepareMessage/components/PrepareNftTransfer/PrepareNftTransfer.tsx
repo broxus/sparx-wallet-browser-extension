@@ -20,10 +20,10 @@ import {
 } from '@app/popup/modules/shared'
 
 import { NftItem } from '../../../NftItem'
-import { FormData, PrepareNftTransferViewModel } from './PrepareNftTransferViewModel'
+import { type FormData, PrepareNftTransferViewModel } from './PrepareNftTransferViewModel'
 import styles from './PrepareNftTransfer.module.scss'
 
-export const PrepareNftTransfer = observer((): JSX.Element => {
+export const PrepareNftTransfer = observer(() => {
     const vm = useViewModel(PrepareNftTransferViewModel, (model) => {
         model.setFormError = (...args) => setError(...args)
     })
@@ -46,7 +46,9 @@ export const PrepareNftTransfer = observer((): JSX.Element => {
                 <Form id="send" className={styles.form} onSubmit={handleSubmit(vm.submit)}>
                     <Space direction="column" gap="m">
                         <Card
-                            size="s" bg="layer-1" padding="xs"
+                            size="s"
+bg="layer-1"
+padding="xs"
                             className={styles.user}
                         >
                             <UserInfo account={vm.account} />

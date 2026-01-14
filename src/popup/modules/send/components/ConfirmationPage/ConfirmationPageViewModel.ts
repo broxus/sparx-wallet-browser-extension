@@ -9,6 +9,7 @@ import { AccountabilityStore, ConnectionStore, LocalizationStore, Router, RpcSto
 import { JettonSymbol } from '@app/models'
 
 import { AssetTransferStore } from '../../store'
+import { GaslessTokenTransferStore } from '../../store/GaslessTokenTransferStore'
 
 @injectable()
 export class ConfirmationPageViewModel {
@@ -19,6 +20,7 @@ export class ConfirmationPageViewModel {
 
     constructor(
         public transfer: AssetTransferStore,
+        public gasslessTransfer: GaslessTokenTransferStore,
         private router: Router,
         private rpcStore: RpcStore,
         private accountability: AccountabilityStore,
@@ -47,10 +49,38 @@ export class ConfirmationPageViewModel {
         })
     }
 
-    public get balanceError(): string | undefined {
-        const { fees, messageParams } = this.transfer
 
-        if (!fees || !messageParams) return undefined
+    public get isGasless() {
+        return !!this.gasslessTransfer.preparedMessage
+    }
+
+    public get txErrors() {
+        return this.isGasless ? this.gasslessTransfer.txErrors : this.transfer.txErrors
+    }
+
+    public get txErrorsLoaded() {
+        return this.isGasless ? this.gasslessTransfer.txErrorsLoaded : this.transfer.txErrorsLoaded
+    }
+
+    public get feeLoaded() {
+        return this.isGasless ? this.gasslessTransfer.feeLoaded : this.transfer.feeLoaded
+    }
+
+    public get messageParams() {
+        return this.isGasless ? this.gasslessTransfer.preparedMessage : this.transfer.messageParams
+    }
+
+    public get fees() {
+        return this.isGasless ? this.gasslessTransfer.preparedMessage?.fee : this.transfer.fees
+    }
+
+
+    public get balanceError(): string | undefined {
+        const { fees, messageParams, feeLoaded } = this.transfer
+
+        if (!feeLoaded || !messageParams) return undefined
+
+        if (!fees) return this.localization.intl.formatMessage({ id: 'ERROR_CALCULATION_FEE' })
 
         const everBalance = new BigNumber(this.everWalletState?.balance || '0')
         let amount: BigNumber
@@ -101,7 +131,13 @@ export class ConfirmationPageViewModel {
         this.loading = true
 
         try {
-            await this.transfer.submitPassword(password)
+            if (this.gasslessTransfer.preparedMessage) {
+                await this.gasslessTransfer.sendMessage(this.gasslessTransfer.preparedMessage, password)
+            }
+            else {
+                await this.transfer.submitPassword(password)
+            }
+
             await this.router.navigate('/result')
         }
         catch (e: any) {

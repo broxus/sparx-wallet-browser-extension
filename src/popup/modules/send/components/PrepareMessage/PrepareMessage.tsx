@@ -5,15 +5,15 @@ import { Controller, useForm } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
-import { amountPattern, convertCurrency, MULTISIG_UNCONFIRMED_LIMIT, SelectedAsset } from '@app/shared'
+import { amountPattern, convertCurrency, MULTISIG_UNCONFIRMED_LIMIT, type SelectedAsset } from '@app/shared'
 import { AmountInput, AssetSelect, Button, Card, Checkbox, Container, Content, ErrorMessage, Footer, Form, FormControl, Header, Hint, Icon, Input, Navbar, UserInfo, useViewModel } from '@app/popup/modules/shared'
 import { ContactInput } from '@app/popup/modules/contacts'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
 
-import { MessageFormData, PrepareMessageViewModel } from './PrepareMessageViewModel'
+import { type MessageFormData, PrepareMessageViewModel } from './PrepareMessageViewModel'
 import styles from './PrepareMessage.module.scss'
 
-export const PrepareMessage = observer((): JSX.Element => {
+export const PrepareMessage = observer(() => {
     const vm = useViewModel(PrepareMessageViewModel, (model) => {
         model.setFormError = (...args) => setError(...args)
     })
@@ -31,12 +31,15 @@ export const PrepareMessage = observer((): JSX.Element => {
     const intl = useIntl()
     const { register, handleSubmit, formState, control, watch, setError, setValue } = form
 
-    const handleMax = useCallback(() => {
+    const handleMax = () => {
         let value = convertCurrency(vm.balance, vm.decimals)
 
         if (vm.asset.type === 'ever_wallet') { // native currency
-            const gas = new BigNumber('-0.01').times(vm.gasFeeFactor).toFixed()
-            value = BigNumber.max(0, BigNumber.sum(value, gas)).toFixed()
+            value = BigNumber.max(0, BigNumber.sum(value, vm.gas)).toFixed()
+        }
+
+        if (vm.isGassless) {
+            value = BigNumber.max(0, BigNumber.sum(value, vm.gas)).toFixed()
         }
 
         setValue('amount', value, {
@@ -44,7 +47,7 @@ export const PrepareMessage = observer((): JSX.Element => {
             shouldDirty: true,
             shouldTouch: true,
         })
-    }, [setValue])
+    }
 
     const handleChangeAsset = useCallback((value: SelectedAsset) => {
         vm.onChangeAsset(value)
@@ -80,7 +83,10 @@ export const PrepareMessage = observer((): JSX.Element => {
                             control={control}
                             rules={{
                                 required: true,
-                                validate: vm.validateAddress,
+                                validate: {
+                                    validate: vm.validateAddress,
+                                    validateWorkchain: vm.validateWorkchain,
+                                },
                             }}
                             render={({ field }) => (
                                 <ContactInput
@@ -103,6 +109,7 @@ export const PrepareMessage = observer((): JSX.Element => {
                         <ErrorMessage>
                             {formState.errors.recipient?.type === 'required' && intl.formatMessage({ id: 'ERROR_FIELD_IS_REQUIRED' })}
                             {formState.errors.recipient?.type === 'validate' && intl.formatMessage({ id: 'ERROR_INVALID_RECIPIENT' })}
+                            {formState.errors.recipient?.type === 'validateWorkchain' && intl.formatMessage({ id: 'ERROR_INVALID_WORKCHAIN' })}
                             {formState.errors.recipient?.type === 'pattern' && intl.formatMessage({ id: 'ERROR_INVALID_FORMAT' })}
                             {formState.errors.recipient?.type === 'invalid' && intl.formatMessage({ id: 'ERROR_INVALID_ADDRESS' })}
                         </ErrorMessage>
@@ -123,7 +130,7 @@ export const PrepareMessage = observer((): JSX.Element => {
                                         design="neutral"
                                         className={styles.max}
                                         onClick={handleMax}
-                                        disabled={!vm.gasFeeFactor}
+                                        disabled={!vm.gas}
                                     >
                                         Max
                                     </Button>
@@ -207,7 +214,7 @@ export const PrepareMessage = observer((): JSX.Element => {
                         form="send"
                         type="submit"
                         design="accent"
-                        disabled={!vm.key || vm.isMultisigLimit}
+                        disabled={!vm.key || vm.isMultisigLimit || !vm.gas}
                         loading={formState.isSubmitting}
                     >
                         {intl.formatMessage({ id: 'NEXT_BTN_TEXT' })}

@@ -14,7 +14,7 @@ import { WebsiteIcon } from '../WebsiteIcon'
 import { ApproveAddAssetViewModel, PhishingAttempt } from './ApproveAddAssetViewModel'
 import styles from './ApproveAddAsset.module.scss'
 
-export const ApproveAddAsset = observer((): JSX.Element | null => {
+export const ApproveAddAsset = observer(() => {
     const vm = useViewModel(ApproveAddAssetViewModel)
     const intl = useIntl()
 
@@ -40,7 +40,9 @@ export const ApproveAddAsset = observer((): JSX.Element | null => {
 
             <Content>
                 <Card
-                    size="s" bg="layer-1" padding="xs"
+                    size="s"
+bg="layer-1"
+padding="xs"
                     className={styles.user}
                 >
                     <UserInfo account={vm.account} />

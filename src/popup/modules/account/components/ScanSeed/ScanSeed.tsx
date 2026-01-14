@@ -9,7 +9,7 @@ import { LoadingAnimation } from '@app/popup/modules/shared/components/RiveAnima
 import { ScanSeedViewModel } from './ScanSeedViewModel'
 import styles from './ScanSeed.module.scss'
 
-export const ScanSeed = observer((): JSX.Element => {
+export const ScanSeed = observer(() => {
     const vm = useViewModel(ScanSeedViewModel)
     const intl = useIntl()
 
@@ -50,7 +50,9 @@ export const ScanSeed = observer((): JSX.Element => {
             <Footer>
                 <FooterAction>
                     <Button
-                        design="accent" type="submit" form="password-request"
+                        design="accent"
+type="submit"
+form="password-request"
                         loading={vm.loading}
                     >
                         {intl.formatMessage({ id: 'CONFIRM_BTN_TEXT' })}

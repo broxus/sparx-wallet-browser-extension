@@ -11,7 +11,7 @@ import { WebsiteIcon } from '../WebsiteIcon'
 import { ApproveDecryptDataViewModel } from './ApproveDecryptDataViewModel'
 import styles from './ApproveDecryptData.module.scss'
 
-export const ApproveDecryptData = observer((): JSX.Element | null => {
+export const ApproveDecryptData = observer(() => {
     const vm = useViewModel(ApproveDecryptDataViewModel)
     const intl = useIntl()
     const { form, isValid, handleSubmit } = usePasswordForm(vm.keyEntry)
@@ -46,7 +46,9 @@ export const ApproveDecryptData = observer((): JSX.Element | null => {
 
             <Content>
                 <Card
-                    size="s" bg="layer-1" padding="xs"
+                    size="s"
+bg="layer-1"
+padding="xs"
                     className={styles.user}
                 >
                     <UserInfo account={vm.account} />

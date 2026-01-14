@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import { Outlet, PathMatch, useMatch, useNavigate } from 'react-router'
+import { Outlet, type PathMatch, useMatch, useNavigate } from 'react-router'
 
 import { Badge, Tabs, useViewModel } from '@app/popup/modules/shared'
 
 import { UserAssetsViewModel } from './UserAssetsViewModel'
 import styles from './UserAssets.module.scss'
 
-export const UserAssets = observer((): JSX.Element => {
+export const UserAssets = observer(() => {
     const vm = useViewModel(UserAssetsViewModel)
     const intl = useIntl()
     const navigate = useNavigate()

@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { observer } from 'mobx-react-lite'
-import { ChangeEvent, ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react'
+import { type ChangeEvent, type ForwardedRef, useCallback, useRef, useState } from 'react'
 import classNames from 'classnames'
 
 import type { RawContact } from '@app/models'
 import { convertAddress, convertPublicKey, isNativeAddress } from '@app/shared'
-import { Input, InputProps, SlidingPanel, useResolve } from '@app/popup/modules/shared'
+import { Input, type InputProps, SlidingPanel, useResolve } from '@app/popup/modules/shared'
 
 import { ContactsStore } from '../../store'
 import { ChooseContact } from '../ChooseContact'
@@ -21,13 +22,14 @@ interface Props {
     invalid?: InputProps['invalid']
     onChange?(e: ChangeEvent<HTMLInputElement>): void;
     onBlur?(): void;
+    ref?: ForwardedRef<HTMLInputElement>
 }
 
-function _ContactInput(props: Props, ref: ForwardedRef<HTMLInputElement>): JSX.Element {
-    const { type, value, className, name, placeholder, autoFocus, size, invalid, onBlur, onChange } = props
+function _ContactInput(props: Props) {
+    const { type, value, className, name, placeholder, autoFocus, size, invalid, onBlur, onChange, ref } = props
     const [opened, setOpened] = useState(false)
     const contactStore = useResolve(ContactsStore)
-    const _ref = useRef<HTMLInputElement>()
+    const _ref = useRef<HTMLInputElement>(undefined)
     const contact = value ? contactStore.contacts[value] : undefined
 
     const handleClose = useCallback(() => setOpened(false), [])
@@ -138,4 +140,4 @@ function _ContactInput(props: Props, ref: ForwardedRef<HTMLInputElement>): JSX.E
     )
 }
 
-export const ContactInput = observer(forwardRef(_ContactInput))
+export const ContactInput = observer(_ContactInput)

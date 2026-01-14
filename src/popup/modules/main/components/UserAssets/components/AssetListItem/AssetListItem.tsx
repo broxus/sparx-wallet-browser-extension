@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
 import { Amount, AssetIcon, Badge, Box, UsdtPrice } from '@app/popup/modules/shared'
-import { AssetType, convertCurrency } from '@app/shared'
+import { type AssetType, convertCurrency } from '@app/shared'
 
 import styles from './AssetListItem.module.scss'
 
@@ -16,7 +16,7 @@ interface Props {
     onClick: () => void;
 }
 
-export const AssetListItem = memo((props: Props): JSX.Element => {
+export const AssetListItem = memo((props: Props) => {
     const { type, address, balance, decimals, old, badge, onClick, currencySymbol } = props
     const amount = decimals != null ? convertCurrency(balance || '0', decimals) : ''
 

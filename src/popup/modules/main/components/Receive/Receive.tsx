@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
-import { ReactNode, useCallback } from 'react'
+import { type ReactNode, useCallback } from 'react'
 import classNames from 'classnames'
 
 import { Button, Container, Content, CopyButton, Footer, Icon, useViewModel } from '@app/popup/modules/shared'
@@ -18,7 +18,7 @@ interface Props {
     hint?: string;
 }
 
-export const Receive = observer(({ address, symbol, hint }: Props): JSX.Element => {
+export const Receive = observer(({ address, symbol, hint }: Props) => {
     const vm = useViewModel(
         ReceiveViewModel,
         (model) => {

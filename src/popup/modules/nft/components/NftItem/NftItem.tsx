@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import type { Nft, NftCollection } from '@app/models'
 import { Icon } from '@app/popup/modules/shared'
 
-import { GridLayout } from '../../store'
+import { type GridLayout } from '../../store'
 import { NftImg } from '../NftImg'
 import styles from './NftItem.module.scss'
 
@@ -17,7 +17,7 @@ interface Props {
     onClick?(): void;
 }
 
-export const NftItem = observer(({ item, layout, className, label, onClick, count }: Props): JSX.Element => (
+export const NftItem = observer(({ item, layout, className, label, onClick, count }: Props) => (
     <div className={classNames(styles.nftItem, styles[`_layout-${layout}`], className)} onClick={onClick}>
         <div className={styles.preview}>
             {item.preview && (

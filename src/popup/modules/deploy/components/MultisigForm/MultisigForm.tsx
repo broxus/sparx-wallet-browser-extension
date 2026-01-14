@@ -18,12 +18,14 @@ import {
     IconButton,
     Input,
     Navbar,
+    NekotonToken,
     Tabs,
     Tooltip,
+    useResolve,
 } from '@app/popup/modules/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
 
-import { MultisigData } from '../../store'
+import { type MultisigData } from '../../store'
 import styles from './MultisigForm.module.scss'
 
 interface FormValue {
@@ -44,8 +46,9 @@ const pattern = /^[a-fA-F0-9]{64}$/
 const hours = [1, 4, 12, 24]
 const MAX_CUSTODIAN = 32
 
-export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.Element => {
+export const MultisigForm = memo(({ data, contractType, onSubmit }: Props) => {
     const intl = useIntl()
+    const nekoton = useResolve(NekotonToken)
 
     const { register, handleSubmit, formState, control, setValue } = useForm<FormValue>({
         defaultValues: useMemo(
@@ -77,6 +80,20 @@ export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.
             setValue('expirationTime', value, { shouldValidate: true })
         },
         [setValue],
+    )
+
+    const validatePublicKey = useCallback(
+        (value: string) => {
+            try {
+                nekoton.checkPublicKey(value)
+            }
+            catch (error) {
+                return 'Error'
+            }
+
+            return true
+        },
+        [],
     )
 
     return (
@@ -220,7 +237,7 @@ export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.
                                     name={`custodians.${index}.value` as const}
                                     defaultValue=""
                                     control={control}
-                                    rules={{ pattern, required: true }}
+                                    rules={{ pattern, required: true, validate: validatePublicKey }}
                                     render={({ field }) => (
                                         <div className={styles.custodian}>
                                             <Input
@@ -248,13 +265,17 @@ export const MultisigForm = memo(({ data, contractType, onSubmit }: Props): JSX.
                                 <ErrorMessage>
                                     {formState.errors.custodians?.[index]?.value?.type === 'pattern'
                                         && intl.formatMessage({ id: 'DEPLOY_MULTISIG_FORM_VALIDATION_INVALID' })}
+                                    {formState.errors.custodians?.[index]?.value?.type === 'validate'
+                                        && intl.formatMessage({ id: 'DEPLOY_MULTISIG_FORM_VALIDATION_INVALID' })}
                                 </ErrorMessage>
                             </FormControl>
                         ))}
 
                         {fields.length < MAX_CUSTODIAN && (
                             <Button
-                                design="ghost" size="s" className={styles.add}
+                                design="ghost"
+size="s"
+className={styles.add}
                                 onClick={addField}
                             >
                                 {Icons.plus}

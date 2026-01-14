@@ -1,10 +1,10 @@
 import classNames from 'classnames'
-import { HTMLAttributes, memo } from 'react'
+import { type HTMLAttributes, memo } from 'react'
 
 import './Content.scss'
 
-type Props = HTMLAttributes<HTMLElement>;
+type Props = HTMLAttributes<HTMLElement>
 
-export const Content = memo(({ className, ...props }: Props): JSX.Element => (
+export const Content = memo(({ className, ...props }: Props) => (
     <div className={classNames('layout-content', className)} {...props} />
 ))

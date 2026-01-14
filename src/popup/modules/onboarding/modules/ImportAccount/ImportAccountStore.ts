@@ -66,7 +66,7 @@ export class ImportAccountStore {
                     this.connectionStore.connectionConfig,
                 ),
                 publicKey: key.publicKey,
-                workchain: 0,
+                workchain: this.connectionStore.workchainId,
             }, true)
 
             await this.rpcStore.rpc.ensureAccountSelected()
@@ -104,7 +104,6 @@ export class ImportAccountStore {
             }
 
             await this.rpcStore.rpc.ensureAccountSelected()
-
         }
         catch (error) {
             console.error(error)
@@ -139,7 +138,6 @@ export class ImportAccountStore {
             )
 
             this.importSeed(key, password, accName)
-
         }
         catch (e: any) {
             if (key) {

@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import { convertAddress } from '@app/shared'
 import { Amount, useViewModel } from '@app/popup/modules/shared'
 import { TransactionItem } from '@app/popup/modules/main/components/TransactionList/components/Item'
-import { JettonSymbol, TokenWalletTransaction } from '@app/models'
+import { type JettonSymbol, type TokenWalletTransaction } from '@app/models'
 
 import { Label, TransactionViewModel } from './TransactionViewModel'
 
@@ -19,7 +19,7 @@ interface Props {
 
 export const Transaction = observer(({
     symbol, transaction, first, last, onViewTransaction,
-}: Props): JSX.Element | null => {
+}: Props) => {
     const vm = useViewModel(TransactionViewModel, model => {
         model.symbol = symbol
         model.transaction = transaction

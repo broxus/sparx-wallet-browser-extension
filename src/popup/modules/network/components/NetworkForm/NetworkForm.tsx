@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 import { Controller, FormProvider, useForm } from 'react-hook-form'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { Icons } from '@app/popup/icons'
 import { Button, Container, Content, ErrorMessage, Footer, Form, FormControl, Header, Input, Navbar, RadioButton, Switch, useResolve } from '@app/popup/modules/shared'
@@ -11,7 +11,7 @@ import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer
 import { isValidURL } from '../../utils'
 import { TokenManifestInput } from './TokenManifestInput'
 import { Endpoints } from './Endpoints'
-import { NetworkFormValue, NetworkFormViewModel } from './NetworkFormViewModel'
+import { type NetworkFormValue, NetworkFormViewModel } from './NetworkFormViewModel'
 import './NetworkForm.scss'
 
 const options = [
@@ -20,7 +20,7 @@ const options = [
     { label: 'GraphQL', value: 'graphql' },
 ]
 
-export const NetworkForm = observer((): JSX.Element => {
+export const NetworkForm = observer(() => {
     const vm = useResolve(NetworkFormViewModel)
     const intl = useIntl()
     const defaultValues = useMemo(() => getDefaultValues(vm.network), [vm.network])
@@ -30,8 +30,9 @@ export const NetworkForm = observer((): JSX.Element => {
     })
     const { handleSubmit, register, control, watch, getValues, setValue, formState } = form
     const type = watch('type')
+    const workchainId = watch('workchainId')
 
-    const handleTypeChange = useCallback((type: NetworkFormValue['type']) => {
+    const handleTypeChange = (type: NetworkFormValue['type']) => {
         if (type === 'jrpc' || type === 'proto') {
             setValue('type', type)
             setValue('endpoints', [getValues('endpoints')[0]])
@@ -39,7 +40,12 @@ export const NetworkForm = observer((): JSX.Element => {
         else {
             setValue('type', 'graphql')
         }
-    }, [])
+    }
+
+    const handleUpdateWorkchain = (value: number) => {
+        const network = vm.getNetworkByWorkchain(value)
+        form.reset(getDefaultValues(network))
+    }
 
     const loading = formState.isSubmitting || vm.loading
 
@@ -69,6 +75,24 @@ export const NetworkForm = observer((): JSX.Element => {
                                 ))}
                             </div>
                         </FormControl>
+
+                        {vm?.workchains?.length && vm.workchains.length > 1 && (
+                            <FormControl label={intl.formatMessage({ id: 'WORKCHAIN' })}>
+                                <div className="network-form__radios">
+                                    {vm.workchains.map(({ id }) => (
+                                        <RadioButton
+                                            labelPosition="after"
+                                            key={id}
+                                            value={id}
+                                            checked={id === workchainId}
+                                            onChange={handleUpdateWorkchain}
+                                        >
+                                            N°{id}
+                                        </RadioButton>
+                                    ))}
+                                </div>
+                            </FormControl>
+                        )}
 
                         <FormControl
                             label={intl.formatMessage({ id: 'NETWORK_NAME' })}
@@ -181,7 +205,9 @@ export const NetworkForm = observer((): JSX.Element => {
             <Footer layer>
                 <FooterAction>
                     <Button
-                        design="accent" type="submit" form="network-form"
+                        design="accent"
+type="submit"
+form="network-form"
                         loading={loading}
                     >
                         {vm.network
@@ -209,5 +235,6 @@ function getDefaultValues(network?: ConnectionDataItem): NetworkFormValue {
         local: network?.type === 'graphql' ? network.data.local : false,
         name: network?.name ?? '',
         config: network?.config ?? {},
+        workchainId: network?.workchainId ?? 0,
     }
 }

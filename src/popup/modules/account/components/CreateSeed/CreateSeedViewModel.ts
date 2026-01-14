@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/* eslint-disable @stylistic/max-len */
 import type * as nt from '@broxus/ever-wallet-wasm'
 import { makeAutoObservable, runInAction } from 'mobx'
 import { ChangeEvent } from 'react'
@@ -231,7 +231,7 @@ export class CreateSeedViewModel {
             name: accountName,
             contractType: getDefaultContractType(this.connectionStore.selectedConnectionNetworkGroup, this.config),
             publicKey: key.publicKey,
-            workchain: 0,
+            workchain: this.connectionStore.workchainId,
         }, false)
 
         return account
@@ -251,7 +251,7 @@ export class CreateSeedViewModel {
                 name: key.name,
                 contractType: getDefaultContractType(this.connectionStore.selectedConnectionNetworkGroup, this.config),
                 publicKey: key.publicKey,
-                workchain: 0,
+                workchain: this.connectionStore.workchainId,
             }, false)
 
             return account
@@ -271,7 +271,6 @@ export class CreateSeedViewModel {
                     await this.rpcStore.rpc.removeKey(key)
                     break
                 }
-
             }
         }
         catch (error) {

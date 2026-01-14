@@ -1,11 +1,11 @@
 import { useIntl } from 'react-intl'
-import { Control, useWatch } from 'react-hook-form'
+import { type Control, useWatch } from 'react-hook-form'
 import { memo } from 'react'
 import classNames from 'classnames'
 
 import { PWD_MIN_LENGTH } from '@app/shared'
 
-import { FormValue } from './PasswordSettingsViewModel'
+import { type FormValue } from './PasswordSettingsViewModel'
 import styles from './PasswordSettings.module.scss'
 
 interface Props {
@@ -17,7 +17,7 @@ const ANY_LOWER = /[a-z]/
 const ANY_UPPER = /[A-Z]/
 const ANY_SYMBOL = /\W/
 
-export const PasswordStrengthMeter = memo(({ control }: Props): JSX.Element => {
+export const PasswordStrengthMeter = memo(({ control }: Props) => {
     const password = useWatch<FormValue>({ control, name: 'newPassword' }) as string ?? ''
     const intl = useIntl()
     let label = intl.formatMessage({ id: 'PWD_WEAK' }),

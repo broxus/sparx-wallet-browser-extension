@@ -1,9 +1,9 @@
-import { ForwardedRef, forwardRef, useCallback } from 'react'
+import { type Ref, useCallback } from 'react'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 import classNames from 'classnames'
 
-import { convertCurrency, convertEvers, formatCurrency, isTokenSymbol, SelectedAsset } from '@app/shared'
+import { convertCurrency, convertEvers, formatCurrency, isTokenSymbol, type SelectedAsset } from '@app/shared'
 import { NativeAssetIcon } from '@app/popup/modules/shared/components/AssetIcon/NativeAssetIcon'
 
 import { useSearch, useViewModel } from '../../hooks'
@@ -22,10 +22,11 @@ interface Props {
     address: string;
     className?: string;
     onChange(value: SelectedAsset): void
+    ref?: Ref<HTMLInputElement>
 }
 
-function AssetSelectInternal(props: Props, ref: ForwardedRef<HTMLInputElement>): JSX.Element {
-    const { value, address, className, onChange } = props
+function AssetSelectInternal(props: Props) {
+    const { value, address, className, onChange, ref } = props
     const vm = useViewModel(AssetSelectViewModel, (model) => {
         model.address = address
         model.asset = value
@@ -62,7 +63,9 @@ function AssetSelectInternal(props: Props, ref: ForwardedRef<HTMLInputElement>):
                     </div>
 
                     <Icon
-                        icon="chevronDown" className={styles.chevron} width={20}
+                        icon="chevronDown"
+className={styles.chevron}
+width={20}
                         height={20}
                     />
                 </div>
@@ -92,10 +95,10 @@ function AssetSelectInternal(props: Props, ref: ForwardedRef<HTMLInputElement>):
                                 <div className={listStyles.wrap}>
                                     <div className={listStyles.amount}>
                                         <div className={listStyles.balance}>
-                                            {formatCurrency(convertEvers(vm.decimals, vm.everWalletState?.balance ?? '0'))}
+                                            {formatCurrency(convertEvers(vm.nativeDecimals, vm.everWalletState?.balance ?? '0'))}
                                         </div>
                                         <div className={listStyles.usd}>
-                                            <UsdtPrice symbol="$" amount={vm.everWalletState?.balance ?? '0'} tokenRoot={token?.address} />
+                                            <UsdtPrice symbol="$" amount={vm.everWalletState?.balance ?? '0'} />
                                         </div>
                                     </div>
                                     <div className={listStyles.name}>{vm.nativeCurrency}</div>
@@ -110,7 +113,7 @@ function AssetSelectInternal(props: Props, ref: ForwardedRef<HTMLInputElement>):
                                     return null
                                 }
 
-                                const balance = vm.tokenWalletAssets ? vm.tokenWalletStates[symbol.rootTokenContract]?.balance : '0'
+                                const balance = vm.tokenWalletStates?.[symbol.rootTokenContract]?.balance ?? '0'
                                 const active = value.type === 'token_wallet' && value.data.rootTokenContract === symbol.rootTokenContract
                                 const handleClick = () => {
                                     onChange({ type: 'token_wallet', data: { rootTokenContract: symbol.rootTokenContract }})
@@ -134,7 +137,7 @@ function AssetSelectInternal(props: Props, ref: ForwardedRef<HTMLInputElement>):
                                                     {formatCurrency(convertCurrency(balance, symbol.decimals))}
                                                 </div>
                                                 <div className={listStyles.usd}>
-                                                    <UsdtPrice symbol="$" amount={balance ?? '0'} tokenRoot={token?.address} />
+                                                    <UsdtPrice symbol="$" amount={balance ?? '0'} tokenRoot={symbol?.rootTokenContract} />
                                                 </div>
                                             </div>
                                             <div className={listStyles.name}>{token?.symbol ?? symbol.name}</div>
@@ -153,4 +156,4 @@ function AssetSelectInternal(props: Props, ref: ForwardedRef<HTMLInputElement>):
     )
 }
 
-export const AssetSelect = observer(forwardRef(AssetSelectInternal))
+export const AssetSelect = observer(AssetSelectInternal)

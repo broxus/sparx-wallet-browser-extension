@@ -1,9 +1,11 @@
+/* eslint-disable no-bitwise */
 import BigNumber from 'bignumber.js'
 import { EventEmitter } from 'events'
 import safeStringify from 'fast-safe-stringify'
 import memoize from 'lodash.memoize'
 import type * as nt from '@broxus/ever-wallet-wasm'
 import { Duplex } from 'readable-stream'
+import { mergeTransactions, type Transaction, type TransactionsBatchInfo } from 'everscale-inpage-provider'
 
 import type { BaseNftJson, ConfirmTransaction, JettonSymbol, SubmitTransaction, TokenWalletTransaction } from '@app/models'
 
@@ -17,6 +19,8 @@ import type {
     PendingJsonRpcResponse,
 } from './jrpc'
 import { NekotonRpcError, RpcErrorCode } from './errors'
+import { TonError } from './ton/errors'
+
 
 const MAX = 4294967295
 
@@ -27,11 +31,11 @@ export const getUniqueId = (): number => {
     return idCounter
 }
 
-export type Maybe<T> = T | null | undefined;
+export type Maybe<T> = T | null | undefined
 
-export type ConsoleLike = Pick<Console, 'log' | 'warn' | 'error' | 'debug' | 'info' | 'trace'>;
+export type ConsoleLike = Pick<Console, 'log' | 'warn' | 'error' | 'debug' | 'info' | 'trace'>
 
-type Handler = (...args: any[]) => void;
+type Handler = (...args: any[]) => void
 
 interface EventMap {
     [k: string]: Handler | Handler[] | undefined;
@@ -40,7 +44,7 @@ interface EventMap {
 export type DomainMetadata = {
     name: string
     icon: string | undefined
-};
+}
 
 function safeApply<T, A extends any[]>(
     handler: (this: T, ...args: A) => void,
@@ -67,7 +71,7 @@ function arrayClone<T>(arr: T[]): T[] {
     return copy
 }
 
-type ObjectValueOfMap<M extends {}, K extends keyof M> = M[K] extends {} ? M[K] : never;
+type ObjectValueOfMap<M extends {}, K extends keyof M> = M[K] extends {} ? M[K] : never
 export const getOrInsertDefault = <M extends {}, K extends keyof M>(
     map: M,
     key: K,
@@ -139,7 +143,7 @@ const callbackNoop = (error?: Error) => {
 
 type NodeifyAsyncResult<F> = F extends (...args: infer T) => Promise<infer U>
     ? (...args: [...T, (error: Error | null, result?: U) => void]) => void
-    : never;
+    : never
 
 export const nodeifyAsync = <C extends {}, M extends keyof C>(
     context: C,
@@ -169,7 +173,7 @@ type NodeifyResult<F> = F extends (...args: [...infer T, (error: Error | null, r
     ? (...args: [...T, (error: Error | null, result?: U) => void]) => void
     : F extends (...args: infer T) => void
         ? (...args: [...T, (error: Error | null, result: undefined) => void]) => void
-        : never;
+        : never
 
 export const nodeify = <C extends {}, M extends keyof C>(
     context: C,
@@ -219,8 +223,11 @@ export const logStreamDisconnectWarning = (
     }
 }
 
-// eslint-disable-next-line max-len
-export const getRpcPromiseCallback = (resolve: (value?: any) => void, reject: (error?: Error) => void, unwrapResult = true) => (error: Error, response: PendingJsonRpcResponse<unknown>) => {
+export const getRpcPromiseCallback = (
+    resolve: (value?: any) => void,
+    reject: (error?: Error) => void,
+    unwrapResult = true,
+) => (error: Error, response: PendingJsonRpcResponse<unknown>) => {
     if (error || response.error) {
         reject(error || response.error)
     }
@@ -370,6 +377,7 @@ export interface JsonRpcError {
     message: string;
     data?: unknown;
     stack?: string;
+    name?: string;
 }
 
 const FALLBACK_ERROR: JsonRpcError = {
@@ -389,7 +397,7 @@ export const serializeError = (
         throw new Error('Must provide fallback error with integer number code and string message')
     }
 
-    if (error instanceof NekotonRpcError) {
+    if (error instanceof NekotonRpcError || error instanceof TonError) {
         return error.serialize()
     }
 
@@ -459,16 +467,15 @@ export type UniqueArray<T> = T extends readonly [infer X, ...infer Rest]
     ? InArray<Rest, X> extends true
         ? ['Encountered value with duplicates:', X]
         : readonly [X, ...UniqueArray<Rest>]
-    : T;
+    : T
 
-// eslint-disable-next-line unused-imports/no-unused-vars-ts
 export type InArray<T, X> = T extends readonly [X, ...infer _Rest]
     ? true
     : T extends readonly [X]
         ? true
-        : T extends readonly [infer _, ...infer Rest] // eslint-disable-line unused-imports/no-unused-vars-ts
+        : T extends readonly [infer _, ...infer Rest]
             ? InArray<Rest, X>
-            : false;
+            : false
 
 export const shuffleArray = <T>(array: T[]) => {
     let currentIndex = array.length,
@@ -491,11 +498,11 @@ export type AggregatedMultisigTransactionInfo = {
     finalTransactionHash?: string
     confirmations: string[]
     createdAt: number
-};
+}
 
 export type AggregatedMultisigTransactions = {
     [transactionId: string]: AggregatedMultisigTransactionInfo
-};
+}
 
 export const extractMultisigTransactionTime = (transactionId: string) => parseInt(transactionId.slice(0, -8), 16)
 
@@ -517,7 +524,7 @@ export const extractTransactionValue = (transaction: nt.Transaction): BigNumber 
     return new BigNumber(transaction.inMessage.value).minus(outgoing)
 }
 
-export type TransactionDirection = 'from' | 'to' | 'service';
+export type TransactionDirection = 'from' | 'to' | 'service'
 
 export function isConfirmTransaction(
     transaction: nt.TonWalletTransaction | TokenWalletTransaction,
@@ -602,7 +609,7 @@ export const extractTokenTransactionValue = ({ info }: TokenWalletTransaction) =
 export type TokenTransactionAddress =
     | undefined
     | nt.TransferRecipient
-    | { type: 'proxy'; address: string };
+    | { type: 'proxy'; address: string }
 
 export const extractTokenTransactionAddress = ({
     info,
@@ -690,9 +697,9 @@ export const formatCurrency = (amount: BigNumber.Value, precise = false): string
     const value = BigNumber(formatValueCurrency(amount, precise))
 
     if (BigNumber(amount).eq(0)) return '0'
-    if (BigNumber(amount).isLessThan(0.000000001)) return '~0'
+    if (BigNumber(amount).abs().isLessThan(0.000000001)) return '~0'
 
-    if (value.isLessThan(1000)) {
+    if (value.abs().isLessThan(1000)) {
         return value.toFixed(Math.max(0, value.dp() ?? 0))
     }
 
@@ -704,10 +711,10 @@ const formatValueCurrency = (amount: BigNumber.Value, precise = false): string =
 
     if (precise) return d.toFormat(format)
 
-    if (d.isLessThan(1)) {
+    if (d.abs().isLessThan(1)) {
         return d.dp(9, BigNumber.ROUND_FLOOR).toFormat(format)
     }
-    if (d.isLessThan(1000)) {
+    if (d.abs().isLessThan(1000)) {
         return d.dp(4, BigNumber.ROUND_FLOOR).toFormat(format)
     }
 
@@ -742,6 +749,8 @@ export const parseAddress = (address: string): [number, string] => {
     const [workchain, hash] = address.split(':')
     return [parseInt(workchain, 10), hash]
 }
+
+export const isMasterchain = (workchain: number) => workchain === -1
 
 export const getAddressHash = (address: string) => address.slice(-64)
 
@@ -779,9 +788,9 @@ export interface SendMessageCallback {
 
 export type SelectedAsset =
     | nt.EnumItem<'ever_wallet', { address: string }>
-    | nt.EnumItem<'token_wallet', { rootTokenContract: string }>;
+    | nt.EnumItem<'token_wallet', { rootTokenContract: string }>
 
-export type AssetType = SelectedAsset['type'];
+export type AssetType = SelectedAsset['type']
 
 export interface TokenWalletState {
     balance: string;
@@ -837,8 +846,201 @@ export function isTokenSymbol(value: nt.Symbol | JettonSymbol | undefined | null
 
 export const sha256 = async (message: string | Uint8Array): Promise<Uint8Array> => {
     const msgBuffer = typeof message === 'string' ? new TextEncoder().encode(message) : message
-
+    // @ts-ignore go f*** yourself ts
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
 
     return new Uint8Array(hashBuffer)
+}
+
+
+const transformKey = (key:string) => {
+    const lastSegment = key.split('.').pop() ?? ''
+
+    const spaced = lastSegment.replace(/([a-z])([A-Z])/g, '$1 $2')
+
+    return spaced
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+}
+
+export const transformObjectToReadable = (obj:Record<string, unknown>) => {
+    const result = {} as Record<string, unknown>
+    for (const [key, value] of Object.entries(obj)) {
+        const newKey = transformKey(key)
+        result[newKey] = value
+    }
+    return result
+}
+
+
+function base64toString(base64: string): string {
+    if (typeof self === 'undefined') {
+        return Buffer.from(base64, 'base64').toString('binary')
+    }
+
+    let b64 = base64.replace(/-/g, '+').replace(/_/g, '/')
+
+    while (b64.length % 4) {
+        b64 += '='
+    }
+
+    try {
+        return atob(b64)
+    }
+    catch (e) {
+        throw new Error('Invalid base64 string')
+    }
+}
+
+/**
+ * @param str {string}
+ * @param size  {number}
+ * @return {Uint8Array}
+ */
+function stringToBytes(str: string, size = 1) {
+    let buf
+    let bufView: any
+    if (size === 1) {
+        buf = new ArrayBuffer(str.length)
+        bufView = new Uint8Array(buf)
+    }
+    if (size === 2) {
+        buf = new ArrayBuffer(str.length * 2)
+        bufView = new Uint16Array(buf)
+    }
+    if (size === 4) {
+        buf = new ArrayBuffer(str.length * 4)
+        bufView = new Uint32Array(buf)
+    }
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+        bufView[i] = str.charCodeAt(i)
+    }
+    return new Uint8Array(bufView.buffer)
+}
+
+/**
+ * @param data  {ArrayLike<number>}
+ * @return {Uint8Array}
+ */
+export function crc16(data: any) {
+    const poly = 0x1021
+    let reg = 0
+    const message = new Uint8Array(data.length + 2)
+    message.set(data)
+    for (const byte of message) {
+        let mask = 0x80
+        while (mask > 0) {
+            reg <<= 1
+            if (byte & mask) {
+                reg += 1
+            }
+            mask >>= 1
+            if (reg > 0xffff) {
+                reg &= 0xffff
+                reg ^= poly
+            }
+        }
+    }
+    return new Uint8Array([Math.floor(reg / 256), reg % 256])
+}
+
+const bounceableTag = 0x11
+const nonBounceableTag = 0x51
+/**
+ * @private
+ * @return {{isTestOnly: boolean, workchain: number, hashPart: Uint8Array, isBounceable: boolean}}
+ */
+export function parseFriendlyAddress(addressString: string) {
+    if (addressString.length !== 48) {
+        throw new Error('User-friendly address should contain strictly 48 characters')
+    }
+    const data = stringToBytes(base64toString(addressString))
+    if (data.length !== 36) { // 1byte tag + 1byte workchain + 32 bytes hash + 2 byte crc
+        throw new Error('Unknown address type: byte length is not equal to 36')
+    }
+    const addr = data.slice(0, 34)
+    const crc = data.slice(34, 36)
+    const calcedCrc = crc16(addr)
+    if (!(calcedCrc[0] === crc[0] && calcedCrc[1] === crc[1])) {
+        throw new Error('Wrong crc16 hashsum')
+    }
+    const tag = addr[0]
+    let isBounceable = false
+    if ((tag !== bounceableTag) && (tag !== nonBounceableTag)) throw new Error('Unknown address tag')
+
+    isBounceable = tag === bounceableTag
+
+    let workchain = null
+    if (addr[1] === 0xff) { // TODO we should read signed integer here
+        workchain = -1
+    }
+    else {
+        workchain = addr[1]
+    }
+    if (workchain !== 0 && workchain !== -1) throw new Error(`Invalid address wc ${workchain}`)
+
+    const hashPart = addr.slice(2, 34)
+    return { isBounceable, workchain, hashPart }
+}
+
+
+const base64abc = (() => {
+    const abc = []
+    const A = 'A'.charCodeAt(0)
+    const a = 'a'.charCodeAt(0)
+    const n = '0'.charCodeAt(0)
+    for (let i = 0; i < 26; ++i) {
+        abc.push(String.fromCharCode(A + i))
+    }
+    for (let i = 0; i < 26; ++i) {
+        abc.push(String.fromCharCode(a + i))
+    }
+    for (let i = 0; i < 10; ++i) {
+        abc.push(String.fromCharCode(n + i))
+    }
+    abc.push('+')
+    abc.push('/')
+    return abc
+})()
+
+/**
+ * @param bytes {Uint8Array}
+ * @return {string}
+ */
+export function bytesToBase64(bytes: Uint8Array) {
+    let result = ''
+    let i
+    const l = bytes.length
+    for (i = 2; i < l; i += 3) {
+        result += base64abc[bytes[i - 2] >> 2]
+        result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)]
+        result += base64abc[((bytes[i - 1] & 0x0f) << 2) | (bytes[i] >> 6)]
+        result += base64abc[bytes[i] & 0x3f]
+    }
+    if (i === l + 1) {
+        // 1 octet missing
+        result += base64abc[bytes[i - 2] >> 2]
+        result += base64abc[(bytes[i - 2] & 0x03) << 4]
+        result += '=='
+    }
+    if (i === l) {
+        // 2 octets missing
+        result += base64abc[bytes[i - 2] >> 2]
+        result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)]
+        result += base64abc[(bytes[i - 1] & 0x0f) << 2]
+        result += '='
+    }
+    return result
+}
+
+export function safeMergeTransactions<Addr>(
+    knownTransactions: Transaction<Addr>[],
+    newTransactions: Transaction<Addr>[],
+    info: TransactionsBatchInfo,
+): Transaction<Addr>[] {
+    const knownIds = new Set(knownTransactions.map(t => t.id.hash))
+    const uniqueNewTransactions = newTransactions.filter(t => !knownIds.has(t.id.hash))
+
+    return mergeTransactions(knownTransactions, uniqueNewTransactions, info)
 }

@@ -2,15 +2,14 @@ import type * as nt from '@broxus/ever-wallet-wasm'
 import type { FunctionCall, Permission } from 'everscale-inpage-provider'
 
 import type { Nekoton } from '@app/models'
-import type { JsonRpcMiddleware } from '@app/shared'
-import { NekotonRpcError, RpcErrorCode, UniqueArray } from '@app/shared'
+import { type JsonRpcMiddleware, NekotonRpcError, RpcErrorCode, type UniqueArray } from '@app/shared'
 
-import { AccountController } from '../controllers/AccountController/AccountController'
-import { PermissionsController } from '../controllers/PermissionsController'
+import { type AccountController } from '../controllers/AccountController/AccountController'
+import { type PermissionsController } from '../controllers/PermissionsController'
 import {
     invalidRequest,
     requireArray,
-    requireArrayOfObjectsWithKeys,
+    requireArrayOfObjectsWithTypedKeys,
     requireFunctionCall,
     requireNumber,
     requireObject,
@@ -37,7 +36,7 @@ export interface HelperMiddlewareApi {
         input: {
             address: string;
             params: Array<nt.TonWalletTransferParams>
-            timeout: number;
+            timeout: nt.Expiration;
             password: nt.KeyPassword;
         };
         output: nt.SignedMessage;
@@ -142,7 +141,7 @@ type HelperMethod<T extends keyof HelperMiddlewareApi> = HelperMiddlewareApi[T] 
             CreateProviderMiddlewareOptions,
         ]
     ) => Promise<void>
-    : never;
+    : never
 
 function requirePermissions<P extends Permission>(
     { origin, permissionsController }: CreateProviderMiddlewareOptions,
@@ -180,10 +179,10 @@ const checkPublicKey: HelperMethod<'checkPublicKey'> = async (req, res, _next, e
 const signMessage: HelperMethod<'signMessage'> = async (req, res, _next, end, ctx) => {
     requireParams(req)
     requireString(req, req.params, 'address')
-    requireArrayOfObjectsWithKeys(req, req.params, 'params', ['destination', 'amount', 'bounce'])
-    requireNumber(req, req.params, 'timeout')
+    requireArrayOfObjectsWithTypedKeys(req, req.params, 'params', { destination: 'string', amount: 'string', bounce: 'boolean' })
+    requireObject(req, req.params, 'timeout')
+    requireNumber(req, req.params.timeout, 'data')
     requireObject(req, req.params, 'password')
-
 
     const { accountController } = ctx
     const { address, params, timeout, password } = req.params
@@ -402,7 +401,10 @@ const estimateFees: HelperMethod<'estimateFees'> = async (req, res, _next, end, 
             unsignedMessage = wallet.prepareTransfer(
                 contractState,
                 wallet.publicKey,
-                60,
+                {
+                    type: 'timeout',
+                    data: 60,
+                },
                 [{
                     amount,
                     destination: repackedRecipient,

@@ -17,7 +17,7 @@ import { KeyListItem } from './KeyListItem'
 import styles from './ManageSeed.module.scss'
 import { ScanSeed } from '../ScanSeed'
 
-export const ManageSeed = observer((): JSX.Element | null => {
+export const ManageSeed = observer(() => {
     const vm = useViewModel(ManageSeedViewModel)
     const intl = useIntl()
 
@@ -64,12 +64,12 @@ export const ManageSeed = observer((): JSX.Element | null => {
                                     {intl.formatMessage({ id: 'EXPORT_SEED_BTN_TEXT' })}
                                 </MenuItem>
                             )}
-                            {vm.currentMasterKey.signerName !== 'encrypted_key' && (
-                                <MenuItem onClick={handleScan}>
-                                    <Icon icon="search" width={16} height={16} />
-                                    {intl.formatMessage({ id: 'SCAN_SEED' })}
-                                </MenuItem>
-                            )}
+
+                            <MenuItem onClick={handleScan}>
+                                <Icon icon="search" width={16} height={16} />
+                                {intl.formatMessage({ id: 'SCAN_SEED' })}
+                            </MenuItem>
+
                             {vm.currentMasterKey.signerName !== 'ledger_key' && (
                                 <MenuItem onClick={handleChangePwd}>
                                     <Icon icon="lock" width={16} height={16} />

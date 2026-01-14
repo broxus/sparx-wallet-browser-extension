@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { useIntl } from 'react-intl'
 
-import { ConnectionDataItem } from '@app/models'
+import { type ConnectionDataItem } from '@app/models'
 import { Button, Container, Content, Footer, Icon } from '@app/popup/modules/shared'
 
 import styles from './SelectNetwork.module.scss'
@@ -13,7 +13,7 @@ interface Props {
     onSettings(): void;
 }
 
-export const SelectNetwork = memo((props: Props): JSX.Element => {
+export const SelectNetwork = memo((props: Props) => {
     const { networks, selectedConnectionId, onSelectNetwork, onSettings } = props
     const intl = useIntl()
 

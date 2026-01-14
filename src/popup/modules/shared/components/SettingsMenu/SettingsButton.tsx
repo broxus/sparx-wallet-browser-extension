@@ -1,4 +1,4 @@
-import { PropsWithChildren, useCallback } from 'react'
+import { type PropsWithChildren, useCallback } from 'react'
 import classNames from 'classnames'
 import { observer } from 'mobx-react-lite'
 
@@ -14,7 +14,7 @@ type Props = PropsWithChildren<{
     className?: string;
 }>
 
-const SettingsButtonInternal = observer(({ className, title, children }: Props): JSX.Element => {
+const SettingsButtonInternal = observer(({ className, title, children }: Props) => {
     const store = useResolve(SlidingPanelStore)
     const handleClick = useCallback(() => {
         store.open({

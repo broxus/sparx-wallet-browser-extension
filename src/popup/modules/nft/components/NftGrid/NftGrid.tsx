@@ -1,10 +1,10 @@
-import { FunctionComponent, HTMLProps, memo, PropsWithChildren } from 'react'
+import { type FunctionComponent, type HTMLProps, memo, type PropsWithChildren } from 'react'
 import classNames from 'classnames'
 
 import { Icons } from '@app/popup/icons'
 import { Button, Icon } from '@app/popup/modules/shared'
 
-import { GridLayout } from '../../store'
+import { type GridLayout } from '../../store'
 import styles from './NftGrid.module.scss'
 
 type Props = PropsWithChildren<{
@@ -14,10 +14,10 @@ type Props = PropsWithChildren<{
     compact?: boolean;
     onLayoutChange?: (layout: GridLayout) => void;
     onTypeChange?: () => void;
-}>;
+}>
 
 const Grid = memo(
-    ({ title, children, layout, className, compact, onLayoutChange, onTypeChange }: Props): JSX.Element => (
+    ({ title, children, layout, className, compact, onLayoutChange, onTypeChange }: Props) => (
         <div className={classNames(styles.nftGrid, styles[`_layout-${layout}`], { [styles._compact]: compact }, className)}>
             {onLayoutChange && (
                 <div className={styles.header}>
@@ -25,8 +25,11 @@ const Grid = memo(
                     <div className={styles.headerControls}>
                         {onTypeChange && (
                             <Button
-                                shape="square" size="s" design="neutral"
-                                onClick={onTypeChange} tabIndex={-1}
+                                shape="square"
+size="s"
+design="neutral"
+                                onClick={onTypeChange}
+tabIndex={-1}
                             >
                                 <Icon icon="settings1" width={16} height={16} />
                             </Button>
@@ -47,7 +50,7 @@ const Grid = memo(
     ),
 )
 
-function Item({ children, className, ...props }: HTMLProps<any>): JSX.Element {
+function Item({ children, className, ...props }: HTMLProps<any>) {
     return (
         <div className={classNames(styles.gridItem, className)} {...props}>
             {children}

@@ -1,24 +1,7 @@
-import { DeviceInfo } from '@tonconnect/protocol'
+import { createWalletError, mapTonErrorCode, createWalletEventError, TonError } from '@app/shared/ton/errors'
 
-import { NekotonRpcError } from '@app/shared/errors'
-import { createWalletError, mapTonErrorCode, createWalletEventError } from '@app/shared/ton/errors'
-
-import { TonConnectEvent, TonConnectItemReply, TonConnectRequest, TonWalletResponse, TonRpcMethod, TON_CONNECT_EVENT_ERROR_CODES, TonRpcRequests, TonSignDataRpcResponseSuccess } from '../models/background'
-import { Client } from './Client'
-
-export const getDeviceInfo = (): DeviceInfo => ({
-    platform: getPlatform()!,
-    appName: 'Sparx',
-    appVersion: '1',
-    maxProtocolVersion: 2,
-    features: [
-        'SendTransaction',
-        {
-            name: 'SendTransaction',
-            maxMessages: 4,
-        },
-    ],
-})
+import { type TonConnectEvent, type TonConnectItemReply, type TonConnectRequest, type TonWalletResponse, type TonRpcMethod, TON_CONNECT_EVENT_ERROR_CODES, type TonRpcRequests, type TonSignDataRpcResponseSuccess, TON_SEND_TRANSACTION_ERROR_CODES } from '../models/background'
+import { type Client } from './Client'
 
 export interface WalletInfo {
     name: string;
@@ -34,12 +17,12 @@ export interface TonConnectBridge {
     isWalletBrowser: boolean;
     connect(protocolVersion: number, message: TonConnectRequest): Promise<TonConnectEvent>;
     restoreConnection(): Promise<TonConnectEvent>;
-    send(message: TonRpcRequests['sendTransaction']): Promise<TonWalletResponse<'sendTransaction'>>;
+    send(message: TonRpcRequests['sendTransaction'] | TonRpcRequests['sendTransaction']): Promise<TonWalletResponse<'signData'> | TonWalletResponse<'sendTransaction'>>;
     signData(message: TonRpcRequests['signData']): Promise<TonWalletResponse<'signData'>>;
     listen(callback: (event: any) => void): () => void;
 }
 
-type TonConnectCallback<T extends TonRpcMethod> = (event: TonWalletResponse<T>) => void;
+type TonConnectCallback<T extends TonRpcMethod> = (event: TonWalletResponse<T>) => void
 
 
 export class TonProvider implements TonConnectBridge {
@@ -96,18 +79,17 @@ export class TonProvider implements TonConnectBridge {
             })
         }
         catch (e: any) {
-            if (e instanceof NekotonRpcError) {
-                return this.notify(createWalletEventError('connect', {
-                    id: this.getConnectId(),
-                    message: e.message,
-                    code: mapTonErrorCode(e.code),
-                }))
-            }
-            return this.notify(createWalletError('connect', {
+            const code = e.name === TonError.name ? e.code : mapTonErrorCode(e.code)
+            const errorMessage = code === TON_SEND_TRANSACTION_ERROR_CODES.USER_REJECTS_ERROR ? 'User declined the connection' : e.message
+
+            return this.notify({
                 id: this.getConnectId(),
-                message: e.message ?? 'Unknown error',
-                code: e.code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
-            }))
+                event: 'connect_error',
+                payload: {
+                    code,
+                    message: errorMessage ?? 'Unknown error',
+                },
+            })
         }
     }
 
@@ -121,17 +103,11 @@ export class TonProvider implements TonConnectBridge {
             })
         }
         catch (e:any) {
-            if (e instanceof NekotonRpcError) {
-                return this.notify(createWalletEventError('disconnect', {
-                    id: this.getConnectId().toString(),
-                    message: e.message,
-                    code: mapTonErrorCode(e.code),
-                }))
-            }
+            const code = e.name === TonError.name ? e.code : mapTonErrorCode(e.code)
             return this.notify(createWalletEventError('disconnect', {
                 id: this.getConnectId().toString(),
                 message: e.message ?? 'Unknown error',
-                code: e.code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
+                code: code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
             }))
         }
     }
@@ -161,24 +137,21 @@ export class TonProvider implements TonConnectBridge {
             })
         }
         catch (e:any) {
-            if (e instanceof NekotonRpcError) {
-                return this.notify(createWalletEventError('connect', {
-                    id: this.getConnectId(),
-                    message: e.message,
-                    code: mapTonErrorCode(e.code),
-                }))
-            }
+            const code = e.name === TonError.name ? e.code : mapTonErrorCode(e.code)
             return this.notify(createWalletEventError('connect', {
                 id: this.getConnectId(),
                 message: e.message ?? 'Unknown error',
-                code: e.code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
+                code: code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
             }))
         }
     }
 
-    send = async (message: TonRpcRequests['sendTransaction']): Promise<TonWalletResponse<'sendTransaction'>> => {
+    send = async (message: TonRpcRequests['sendTransaction'] | TonRpcRequests['signData']): Promise<TonWalletResponse<'sendTransaction'> | TonWalletResponse<'signData'>> => {
+        if (message.method === 'signData') return this.signData(message) as any
+
         try {
             const result = await this.client.request<string>({ method: 'tonSendTransaction', params: message.params })
+
             if (!result) {
                 return createWalletError('sendTransaction', {
                     id: message.id,
@@ -193,20 +166,17 @@ export class TonProvider implements TonConnectBridge {
             }
         }
         catch (e:any) {
-            if (e instanceof NekotonRpcError) {
-                return createWalletError('sendTransaction', {
-                    id: message.id,
-                    message: e.message,
-                    code: mapTonErrorCode(e.code),
-                })
-            }
+            const code = e.name === TonError.name ? e.code : mapTonErrorCode(e.code)
+            const errorMessage = code === TON_SEND_TRANSACTION_ERROR_CODES.USER_REJECTS_ERROR ? 'User declined the transaction' : e.message
+
             return createWalletError('sendTransaction', {
                 id: message.id,
-                message: e.message ?? 'Unknown error',
-                code: e.code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
+                message: errorMessage ?? 'Unknown error',
+                code: code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
             })
         }
     }
+
 
     signData = async (message: TonRpcRequests['signData']): Promise<TonWalletResponse<'signData'>> => {
         try {
@@ -225,17 +195,11 @@ export class TonProvider implements TonConnectBridge {
             }
         }
         catch (e: any) {
-            if (e instanceof NekotonRpcError) {
-                return createWalletError('signData', {
-                    id: message.id,
-                    message: e.message,
-                    code: mapTonErrorCode(e.code),
-                })
-            }
+            const code = e.name === TonError.name ? e.code : mapTonErrorCode(e.code)
             return createWalletError('signData', {
                 id: message.id,
                 message: e.message ?? 'Unknown error',
-                code: e.code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
+                code: code ?? TON_CONNECT_EVENT_ERROR_CODES.UNKNOWN_ERROR,
             })
         }
     }
@@ -260,36 +224,41 @@ export class TonProvider implements TonConnectBridge {
 
 }
 
-const getPlatform = (): DeviceInfo['platform'] => {
-    const platform = (window.navigator as any)?.userAgentData?.platform || window.navigator.platform
 
-    const userAgent = window.navigator.userAgent
-
-    const macosPlatforms = ['macOS', 'Macintosh', 'MacIntel', 'MacPPC', 'Mac68K']
-    const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE']
-    const iphonePlatforms = ['iPhone']
-    const iosPlatforms = ['iPad', 'iPod']
-
-    let os: DeviceInfo['platform'] | null = null
-
-    if (macosPlatforms.indexOf(platform) !== -1) {
-        os = 'mac'
-    }
-    else if (iphonePlatforms.indexOf(platform) !== -1) {
-        os = 'iphone'
-    }
-    else if (iosPlatforms.indexOf(platform) !== -1) {
-        os = 'ipad'
-    }
-    else if (windowsPlatforms.indexOf(platform) !== -1) {
-        os = 'windows'
-    }
-    else if (/Android/.test(userAgent)) {
-        os = 'linux'
-    }
-    else if (/Linux/.test(platform)) {
-        os = 'linux'
-    }
-
-    return os!
+export type SignDataFeature = {
+    name: 'SignData';
+    types: ('text' | 'binary' | 'cell')[];
 }
+export type SendTransactionFeature = {
+    name: 'SendTransaction';
+    maxMessages: number;
+    extraCurrencySupported?: boolean;
+}
+export type SendTransactionFeatureDeprecated = 'SendTransaction'
+export type Feature = SendTransactionFeatureDeprecated | SendTransactionFeature | SignDataFeature
+export type DeviceInfo = {
+    platform: 'iphone' | 'ipad' | 'android' | 'windows' | 'mac' | 'linux' | 'browser';
+    appName: string;
+    appVersion: string;
+    maxProtocolVersion: number;
+    features: Feature[];
+}
+
+export const getDeviceInfo = (): DeviceInfo => ({
+    platform: 'browser',
+    appName: 'Sparx',
+    appVersion: '1',
+    maxProtocolVersion: 2,
+    features: [
+        'SendTransaction',
+        {
+            name: 'SendTransaction',
+            maxMessages: 4,
+            extraCurrencySupported: true,
+        },
+        {
+            name: 'SignData',
+            types: ['text', 'binary', 'cell'],
+        },
+    ],
+})

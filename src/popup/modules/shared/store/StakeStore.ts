@@ -3,7 +3,7 @@ import { inject, singleton } from 'tsyringe'
 import BigNumber from 'bignumber.js'
 
 import { StEverVaultAbi } from '@app/abi'
-import type { DepositParams, Nekoton, RemovePendingWithdrawParams, StEverVaultDetails, WithdrawRequest } from '@app/models'
+import type { CurValidatorConfig, DepositParams, Nekoton, RemovePendingWithdrawParams, StEverVaultDetails, ValidatorConfig, WithdrawRequest } from '@app/models'
 import { NetworkGroup, Blockchain } from '@app/shared'
 
 import { Logger } from '../utils'
@@ -16,6 +16,10 @@ import { TokensStore } from './TokensStore'
 export class StakeStore {
 
     public details: StEverVaultDetails | undefined
+
+    public validatorConfig: ValidatorConfig | undefined
+
+    public curValidatorConfig: CurValidatorConfig | undefined
 
     private _apy: string | undefined
 
@@ -58,27 +62,30 @@ export class StakeStore {
             decimals: number,
             symbol: string
         }>
-
     }
 
     public get stakingAvailable(): boolean {
         return !!Object.values(this.stakingInfo).length
     }
 
-    public get withdrawTimeHours(): number {
+    public get withdrawTime(): number {
+        let roundDelay = 18 * 60 * 60
+        if (this.validatorConfig) {
+            roundDelay = Math.ceil(Number(this.validatorConfig.elections_start_before)
+            - Number(this.validatorConfig.elections_end_before) + Number(this.validatorConfig.stake_held_for))
+        }
+
+
         let withdrawHoldTime = new BigNumber(this.details?.withdrawHoldTime ?? 0)
 
         if (withdrawHoldTime.lte(24 * 60 * 60)) { // withdrawHoldTime <= 24h
             withdrawHoldTime = withdrawHoldTime.plus(36 * 60 * 60) // + 36h
         }
         else {
-            withdrawHoldTime = withdrawHoldTime.plus(18 * 60 * 60) // + 18h
+            withdrawHoldTime = withdrawHoldTime.plus(roundDelay)
         }
 
-        return withdrawHoldTime
-            .div(60 * 60) // seconds to hours
-            .dp(0, BigNumber.ROUND_CEIL)
-            .toNumber()
+        return withdrawHoldTime.toNumber()
     }
 
     private get connectionGroup(): NetworkGroup {
@@ -87,10 +94,13 @@ export class StakeStore {
 
     public async getDetails(): Promise<void> {
         try {
-            const details = await this.rpcStore.rpc.getStakeDetails()
+            const [details, configs] = await Promise.all([this.rpcStore.rpc.getStakeDetails(),
+                this.rpcStore.rpc.getValidatorConfig()])
 
             runInAction(() => {
                 this.details = details
+                this.validatorConfig = configs.validatorConfig
+                this.curValidatorConfig = configs.curValidatorConfig
             })
         }
         catch (e) {
@@ -140,30 +150,30 @@ export class StakeStore {
             }
         }
 
-        // if (networkType.isTycho) {
-        const price = await this.rpcStore.rpc.getPrice()
+        if (this.connectionStore.selectedConnectionNetworkType === 'tycho') {
+            const price = await this.rpcStore.rpc.getPrice()
 
-        return {
-            depositAttachedFee: await this.rpcStore.rpc.computeGas({
-                dynamicGas: info.stakeDepositAttachedFee,
-                params: price,
-            }),
-            removePendingWithdrawAttachedFee: await this.rpcStore.rpc.computeGas({
-                dynamicGas: info.stakeRemovePendingWithdrawAttachedFee,
-                params: price,
-            }),
-            withdrawAttachedFee: await this.rpcStore.rpc.computeGas({
-                dynamicGas: info.stakeWithdrawAttachedFee,
-                params: price,
-            }),
+            return {
+                depositAttachedFee: await this.rpcStore.rpc.computeGas({
+                    dynamicGas: info.stakeDepositAttachedFee,
+                    params: price,
+                }),
+                removePendingWithdrawAttachedFee: await this.rpcStore.rpc.computeGas({
+                    dynamicGas: info.stakeRemovePendingWithdrawAttachedFee,
+                    params: price,
+                }),
+                withdrawAttachedFee: await this.rpcStore.rpc.computeGas({
+                    dynamicGas: info.stakeWithdrawAttachedFee,
+                    params: price,
+                }),
+            }
         }
 
-
-        // return {
-        //     depositAttachedFee: info.stakeDepositAttachedFee,
-        //     removePendingWithdrawAttachedFee: info.stakeRemovePendingWithdrawAttachedFee,
-        //     withdrawAttachedFee: info.stakeWithdrawAttachedFee,
-        // }
+        return {
+            depositAttachedFee: info.stakeDepositAttachedFee,
+            removePendingWithdrawAttachedFee: info.stakeRemovePendingWithdrawAttachedFee,
+            withdrawAttachedFee: info.stakeWithdrawAttachedFee,
+        }
     }
 
 

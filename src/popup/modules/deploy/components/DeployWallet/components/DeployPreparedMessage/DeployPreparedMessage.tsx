@@ -35,7 +35,7 @@ interface Props {
     onClose(): void;
 }
 
-export const DeployPreparedMessage = memo((props: Props): JSX.Element => {
+export const DeployPreparedMessage = memo((props: Props) => {
     const { keyEntry, account, loading, error, fees, onClose, onSubmit, balance } = props
     const connection = useResolve(ConnectionStore)
 
@@ -68,7 +68,9 @@ export const DeployPreparedMessage = memo((props: Props): JSX.Element => {
                 <Content>
                     <Space direction="column" gap="m">
                         <Card
-                            size="s" bg="layer-3" padding="xs"
+                            size="s"
+bg="layer-3"
+padding="xs"
                         >
                             {account && <UserInfo account={account} />}
                         </Card>

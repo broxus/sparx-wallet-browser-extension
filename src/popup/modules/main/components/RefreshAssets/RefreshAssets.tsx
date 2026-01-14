@@ -21,7 +21,7 @@ import { multiplier } from '@app/shared'
 import { RefreshAssetsViewModel } from './RefreshAssetsViewModel'
 import styles from './RefreshAssets.module.scss'
 
-export const RefreshAssets = observer((): JSX.Element => {
+export const RefreshAssets = observer(() => {
     const vm = useViewModel(RefreshAssetsViewModel)
     const intl = useIntl()
 
@@ -93,7 +93,9 @@ export const RefreshAssets = observer((): JSX.Element => {
 
                 <Footer className={styles.footer}>
                     <Button
-                        design="accent" disabled={vm.checked.size === 0} loading={vm.loading}
+                        design="accent"
+disabled={vm.checked.size === 0}
+loading={vm.loading}
                         onClick={vm.submit}
                     >
                         {intl.formatMessage({ id: 'ADD_BTN_TEXT' })}

@@ -20,7 +20,7 @@ interface FormValue {
     password: string;
 }
 
-export const PasswordForm = observer((props: Props): JSX.Element => {
+export const PasswordForm = observer((props: Props) => {
     const { loading, error, name, onSubmit, onBack } = props
     const intl = useIntl()
     const { register, handleSubmit, formState } = useForm<FormValue>({
@@ -60,7 +60,9 @@ export const PasswordForm = observer((props: Props): JSX.Element => {
                         {intl.formatMessage({ id: 'BACK_BTN_TEXT' })}
                     </Button>
                     <Button
-                        key="submit" design="accent" loading={loading}
+                        key="submit"
+design="accent"
+loading={loading}
                         onClick={handleSubmit(submit)}
                     >
                         {intl.formatMessage({ id: 'CONFIRM_BTN_TEXT' })}

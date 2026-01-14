@@ -1,18 +1,18 @@
 import classNames from 'classnames'
-import { forwardRef, HTMLAttributes, ReactNode } from 'react'
+import { type HTMLAttributes, type ReactNode, type Ref } from 'react'
 
 import styles from './RoundedIcon.module.scss'
 
 type Props = HTMLAttributes<HTMLDivElement> & {
     icon: ReactNode;
-};
+    ref?: Ref<HTMLDivElement>
+}
 
-export const RoundedIcon = forwardRef<HTMLDivElement, Props>(({ icon, className, ...props }, ref) => (
+export const RoundedIcon = ({ icon, className, ...props }: Props) => (
     <div
         {...props}
-        ref={ref}
         className={classNames(styles.roundedIcon, className)}
     >
         {icon}
     </div>
-))
+)
