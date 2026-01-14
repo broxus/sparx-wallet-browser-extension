@@ -12,7 +12,7 @@ import { ApproveRequestPermissionsViewModel, Step } from './ApproveRequestPermis
 import styles from './ApproveRequestPermissions.module.scss'
 import { AccountsListViewModel } from '../AccountsList/AccountsListViewModel'
 
-export const ApproveRequestPermissions = observer((): JSX.Element => {
+export const ApproveRequestPermissions = observer(() => {
     const vm = useViewModel(ApproveRequestPermissionsViewModel)
     const vmAcc = useViewModel(AccountsListViewModel)
     const intl = useIntl()
@@ -77,7 +77,9 @@ export const ApproveRequestPermissions = observer((): JSX.Element => {
 
                     <Content className={styles.content}>
                         <Card
-                            size="s" bg="layer-1" padding="xs"
+                            size="s"
+bg="layer-1"
+padding="xs"
                             className={styles.user}
                         >
                             <UserInfo account={vm.selectedAccount} />

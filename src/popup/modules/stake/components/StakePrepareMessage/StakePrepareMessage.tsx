@@ -13,18 +13,18 @@ import { StakePrepareMessageViewModel, Tab } from './StakePrepareMessageViewMode
 import styles from './StakePrepareMessage.module.scss'
 import { StakeTutorial } from '../StakeTutorial'
 
-export const StakePrepareMessage = observer((): JSX.Element => {
+export const StakePrepareMessage = observer(() => {
     const vm = useViewModel(StakePrepareMessageViewModel)
     const intl = useIntl()
     const [isOpenInfo, setIsOpenInfo] = useState(vm.isOpenInfo)
 
     return (
         <>
-
             <Container>
                 <Header>
                     <Navbar
-                        close="window" info={(
+                        close="window"
+                        info={(
                             <Button
                                 size="s"
                                 shape="icon"
@@ -87,7 +87,9 @@ export const StakePrepareMessage = observer((): JSX.Element => {
                     {!vm.tab.is(Tab.InProgress) && (
                         <FooterAction>
                             <Button
-                                width={232} form="stake" type="submit"
+                                width={232}
+                                form="stake"
+                                type="submit"
                                 disabled={!vm.transfer.key || vm.isMultisigLimit || !!vm.error}
                             >
                                 {vm.tab.is(Tab.Stake)
@@ -102,7 +104,10 @@ export const StakePrepareMessage = observer((): JSX.Element => {
             <StakeTutorial
                 stTokenRoot={vm.stEverTokenRoot}
                 onClose={() => setIsOpenInfo(false)}
-                active={isOpenInfo} symbol={vm.currencyName} receiveSymbol={vm.stSymbol}
+                active={isOpenInfo}
+                symbol={vm.currencyName}
+                receiveSymbol={vm.stSymbol}
+                apy={vm.apy}
             />
         </>
     )

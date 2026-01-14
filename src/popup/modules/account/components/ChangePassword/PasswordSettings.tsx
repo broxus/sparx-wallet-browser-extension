@@ -8,7 +8,7 @@ import { PWD_MIN_LENGTH } from '@app/shared'
 import { Button, Container, Content, Footer, Form, FormControl, Icon, PasswordInput, Switch, Tooltip, useViewModel } from '@app/popup/modules/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
 
-import { FormValue, PasswordSettingsViewModel } from './PasswordSettingsViewModel'
+import { type FormValue, PasswordSettingsViewModel } from './PasswordSettingsViewModel'
 import { PasswordStrengthMeter } from './PasswordStrengthMeter'
 import styles from './PasswordSettings.module.scss'
 
@@ -16,7 +16,7 @@ interface Props {
     keyEntry: nt.KeyStoreEntry;
 }
 
-export const PasswordSettings = observer(({ keyEntry }: Props): JSX.Element => {
+export const PasswordSettings = observer(({ keyEntry }: Props) => {
     const vm = useViewModel(PasswordSettingsViewModel, (model) => {
         model.keyEntry = keyEntry
     }, [keyEntry])

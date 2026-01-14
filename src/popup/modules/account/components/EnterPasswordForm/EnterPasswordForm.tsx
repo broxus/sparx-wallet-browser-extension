@@ -15,7 +15,7 @@ interface FormValue {
     password: string;
 }
 
-export const EnterPasswordForm = memo(({ error, loading, onSubmit }: Props): JSX.Element => {
+export const EnterPasswordForm = memo(({ error, loading, onSubmit }: Props) => {
     const intl = useIntl()
     const { register, handleSubmit, formState } = useForm<FormValue>()
 
@@ -54,7 +54,9 @@ export const EnterPasswordForm = memo(({ error, loading, onSubmit }: Props): JSX
             <Footer layer>
                 <FooterAction>
                     <Button
-                        design="accent" form="enter-password" type="submit"
+                        design="accent"
+form="enter-password"
+type="submit"
                         loading={loading}
                     >
                         {intl.formatMessage({ id: 'CONFIRM_BTN_TEXT' })}

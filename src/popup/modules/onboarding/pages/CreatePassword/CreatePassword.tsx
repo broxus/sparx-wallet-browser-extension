@@ -24,7 +24,7 @@ interface Props {
 
 const FIRST_ACCOUNT_NAME = 'Account 1.1'
 
-export const CreatePassword = observer(({ step }: Props): JSX.Element => {
+export const CreatePassword = observer(({ step }: Props) => {
     const intl = useIntl()
     const navigate = useNavigate()
     const { register, formState, trigger, getValues } = useForm<FormValue>()
@@ -42,7 +42,6 @@ export const CreatePassword = observer(({ step }: Props): JSX.Element => {
             await trySubmit(data)
             navigate(`${appRoutes.newAccount.path}/${appRoutes.confirmation.path}`)
         }
-
     }, [appRoutes, navigate, trigger, trySubmit, getValues])
 
     const handleBack = useCallback(() => {

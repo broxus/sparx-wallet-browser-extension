@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { Autocomplete, DatasetItem, Icon, Input } from '@app/popup/modules/shared'
+import { Autocomplete, type DatasetItem, Icon, Input } from '@app/popup/modules/shared'
 
 import s from './EnterSeed.module.scss'
 
@@ -14,7 +14,7 @@ interface Props {
     prefix?: React.ReactNode;
 }
 
-export const EnterSeedInput = memo(({ name, index, required, prefix, getBip39Hints }: Props): JSX.Element => {
+export const EnterSeedInput = memo(({ name, index, required, prefix, getBip39Hints }: Props) => {
     const { control, setValue, watch } = useFormContext()
     const [dataset, setDataset] = useState<DatasetItem[]>([])
 

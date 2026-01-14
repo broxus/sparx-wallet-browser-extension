@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl'
 
 import { Icons } from '@app/popup/icons'
 import { convertPublicKey } from '@app/shared'
-import { IconButton, useViewModel } from '@app/popup/modules/shared'
+import { CopyButton, Icon, IconButton, useViewModel } from '@app/popup/modules/shared'
 
 import { RenameCustodian } from '../RenameCustodian'
 import { CustodianListViewModel } from './CustodianListViewModel'
@@ -14,7 +14,7 @@ interface Props {
     className?: string;
 }
 
-export const CustodianList = observer(({ address, className }: Props): JSX.Element | null => {
+export const CustodianList = observer(({ address, className }: Props) => {
     const intl = useIntl()
 
     const vm = useViewModel(CustodianListViewModel, (model) => {
@@ -38,9 +38,17 @@ export const CustodianList = observer(({ address, className }: Props): JSX.Eleme
                             <div className={styles.name}>
                                 {name ?? formatedPK}
                             </div>
-                            <div className={styles.key}>
-                                {formatedPK}
+                            <div className={styles.box}>
+                                <div className={styles.key}>
+                                    {formatedPK}
+                                </div>
+                                <CopyButton text={publicKey}>
+                                    <button type="button" className={styles.button}>
+                                        <Icon icon="copy" width={12} height={12} />
+                                    </button>
+                                </CopyButton>
                             </div>
+
                         </div>
                         <IconButton
                             design="ghost"

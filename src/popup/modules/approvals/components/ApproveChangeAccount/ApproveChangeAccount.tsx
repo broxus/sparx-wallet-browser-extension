@@ -12,7 +12,7 @@ import { ApproveChangeAccountViewModel } from './ApproveChangeAccountViewModel'
 import styles from './ApproveChangeAccount.module.scss'
 import { AccountsListViewModel } from '../AccountsList/AccountsListViewModel'
 
-export const ApproveChangeAccount = observer((): JSX.Element => {
+export const ApproveChangeAccount = observer(() => {
     const vm = useViewModel(ApproveChangeAccountViewModel)
     const vmAcc = useViewModel(AccountsListViewModel)
     const intl = useIntl()
@@ -49,7 +49,9 @@ export const ApproveChangeAccount = observer((): JSX.Element => {
                         {intl.formatMessage({ id: 'REJECT_BTN_TEXT' })}
                     </Button>
                     <Button
-                        design="accent" disabled={!vm.selectedAccount} loading={vm.loading}
+                        design="accent"
+disabled={!vm.selectedAccount}
+loading={vm.loading}
                         onClick={vm.onSubmit}
                     >
                         {intl.formatMessage({ id: 'NEXT_BTN_TEXT' })}

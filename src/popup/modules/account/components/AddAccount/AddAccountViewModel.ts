@@ -13,12 +13,11 @@ import {
     RpcStore,
 } from '@app/popup/modules/shared'
 import { parseError } from '@app/popup/utils'
-import { getWalletContracts, isNativeAddress, NetworkGroup } from '@app/shared'
+import { getContractName, getWalletContracts, isNativeAddress, NetworkGroup } from '@app/shared'
 import { ContactsStore } from '@app/popup/modules/contacts'
 
 import { AddAccountFlow } from '../../models'
-import type { ImportAccountFormValue } from './components'
-import { CreateAccountFormValue } from './components'
+import { type ImportAccountFormValue, CreateAccountFormValue } from './components'
 
 @injectable()
 export class AddAccountViewModel {
@@ -81,17 +80,23 @@ export class AddAccountViewModel {
         })
     }
 
-    public async createAccount({ name, contractType }: CreateAccountFormValue): Promise<void> {
+    public async createAccount({ name: formName, contractType }: CreateAccountFormValue): Promise<void> {
         if (!this.accountability.currentDerivedKey || this.loading) return
 
         this.loading = true
+
+        const name = formName || getContractName(
+            contractType,
+            this.connectionStore.selectedConnection.group,
+            this.connectionStore.connectionConfig,
+        )
 
         try {
             const account = await this.rpcStore.rpc.createAccount({
                 contractType,
                 name,
                 publicKey: this.accountability.currentDerivedKey.publicKey,
-                workchain: 0,
+                workchain: this.connectionStore.workchainId,
             }, false)
 
             if (account) {
@@ -110,7 +115,7 @@ export class AddAccountViewModel {
         }
     }
 
-    public async importAccount({ name, address: rawAddress }: ImportAccountFormValue): Promise<void> {
+    public async importAccount({ name: formName, address: rawAddress }: ImportAccountFormValue): Promise<void> {
         if (!this.accountability.currentDerivedKey) return
 
         this.loading = true
@@ -134,6 +139,12 @@ export class AddAccountViewModel {
 
             const data = await this.rpcStore.rpc.getEverWalletInitData(address)
             const { publicKey, contractType, workchain, custodians } = data
+
+            const name = formName || getContractName(
+                contractType,
+                this.connectionStore.selectedConnection.group,
+                this.connectionStore.connectionConfig,
+            )
 
             const currentPublicKey = currentDerivedKey.publicKey
 

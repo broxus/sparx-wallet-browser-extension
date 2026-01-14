@@ -7,14 +7,14 @@ import { useIntl } from 'react-intl'
 import { Button, Container, Content, Footer, Form, FormControl, Input, useViewModel } from '@app/popup/modules/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
 
-import { ChangeKeyNameViewModel, FormValue } from './ChangeKeyNameViewModel'
+import { ChangeKeyNameViewModel, type FormValue } from './ChangeKeyNameViewModel'
 
 interface Props {
     keyEntry: nt.KeyStoreEntry;
     derivedKey?: boolean;
 }
 
-export const ChangeKeyName = observer(({ keyEntry, derivedKey }: Props): JSX.Element => {
+export const ChangeKeyName = observer(({ keyEntry, derivedKey }: Props) => {
     const vm = useViewModel(ChangeKeyNameViewModel)
     const intl = useIntl()
     const { register, handleSubmit, setError, formState } = useForm<FormValue>({

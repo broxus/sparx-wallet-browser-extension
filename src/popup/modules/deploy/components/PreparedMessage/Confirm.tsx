@@ -18,7 +18,7 @@ interface Props {
     onClose(): void;
 }
 
-export const Confirm = memo((props: Props): JSX.Element => {
+export const Confirm = memo((props: Props) => {
     const { keyEntry, account, loading, error, fees, onClose, onSubmit } = props
 
     const intl = useIntl()
@@ -49,7 +49,9 @@ export const Confirm = memo((props: Props): JSX.Element => {
                         </Card>
 
                         <PasswordForm
-                            form={form} error={error} keyEntry={keyEntry}
+                            form={form}
+error={error}
+keyEntry={keyEntry}
                             onSubmit={handleSubmit(handleConfirm)}
                         />
                     </Space>
@@ -58,7 +60,8 @@ export const Confirm = memo((props: Props): JSX.Element => {
                 <Footer>
                     <FooterAction>
                         <Button
-                            disabled={!fees || !isValid} loading={loading}
+                            disabled={!fees || !isValid}
+loading={loading}
                             onClick={handleSubmit(handleConfirm)}
                         >
                             {intl.formatMessage({ id: 'CONFIRM_BTN_TEXT' })}

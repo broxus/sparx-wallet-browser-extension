@@ -15,7 +15,7 @@ interface Props {
     loading?: boolean;
 }
 
-export const NavigationBar = memo(({ onNext, onSkip, onBack, disabled, loading }: Props): JSX.Element => {
+export const NavigationBar = memo(({ onNext, onSkip, onBack, disabled, loading }: Props) => {
     const intl = useIntl()
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,7 +36,9 @@ export const NavigationBar = memo(({ onNext, onSkip, onBack, disabled, loading }
             <div className={s.container}>
                 <Space direction="row" gap="l">
                     <Button
-                        design="neutral" onClick={onBack} size="m"
+                        design="neutral"
+onClick={onBack}
+size="m"
                         shape="pill"
                     >
                         {Icons.arrowLeft}

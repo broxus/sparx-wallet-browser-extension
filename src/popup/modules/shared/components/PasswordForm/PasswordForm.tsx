@@ -1,5 +1,5 @@
 import type * as nt from '@broxus/ever-wallet-wasm'
-import { UseFormReturn } from 'react-hook-form'
+import { type UseFormReturn } from 'react-hook-form'
 import { useIntl } from 'react-intl'
 import { observer } from 'mobx-react-lite'
 import { useEffect } from 'react'
@@ -27,7 +27,7 @@ export interface PasswordFormValue {
     password: string;
 }
 
-function PasswordFormInner(props: Props): JSX.Element | null {
+function PasswordFormInner(props: Props) {
     const {
         id = 'password-form',
         form,

@@ -1,18 +1,19 @@
 /* eslint-disable no-nested-ternary */
-import { FC, memo, useState } from 'react'
+import { type FC, memo, useState } from 'react'
 import { flatten } from 'flat'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
 import { Card, Icon, Space } from '@app/popup/modules/shared'
+import { transformObjectToReadable } from '@app/shared'
 
 import styles from './ParamsView.module.scss'
 
 interface Item {
-    params: Object;
+    params: object;
 }
 
-export const ParamsItem = memo(({ params }: Item): JSX.Element => (
+export const ParamsItem = memo(({ params }: Item) => (
     <>
         {Object.entries(params).map(([key, value]) => (
             <Card size="xs" className={styles.item}>
@@ -34,13 +35,13 @@ export const ParamsItem = memo(({ params }: Item): JSX.Element => (
 ))
 
 type Props = {
-    params: Object;
+    params: object;
+    isViewParamsReadable?: boolean
 }
 
-export const ParamsView: FC<Props> = ({ params }) => {
+export const ParamsView: FC<Props> = ({ params, isViewParamsReadable }) => {
     const intl = useIntl()
     const [isOpen, setIsOpen] = useState(false)
-
 
     return (
         <Space direction="column" gap="m">
@@ -48,7 +49,9 @@ export const ParamsView: FC<Props> = ({ params }) => {
                 {intl.formatMessage({ id: 'METADATA' })}
             </div>
             <Space direction="column" gap="m" className={classNames(styles.list, { [styles._active]: isOpen })}>
-                <ParamsItem params={flatten(params)} />
+                <ParamsItem
+                    params={isViewParamsReadable ? transformObjectToReadable(flatten(params)) : flatten(params)}
+                />
             </Space>
             <button onClick={() => setIsOpen(p => !p)} className={styles.button}>
                 <span className={styles.text}>{intl.formatMessage({ id: isOpen ? 'SHOW_LESS_METADATA' : 'SHOW_MORE_METADATA' })}</span>

@@ -1,4 +1,4 @@
-import { memo, PropsWithChildren } from 'react'
+import { memo, type PropsWithChildren } from 'react'
 import classNames from 'classnames'
 
 import { Loader } from '../Loader'
@@ -9,7 +9,7 @@ interface Props extends PropsWithChildren {
     active?: boolean;
 }
 
-export const PageLoader = memo(({ className, children, active = true }: Props): JSX.Element => (
+export const PageLoader = memo(({ className, children, active = true }: Props) => (
     <>
         {children}
         {active && (

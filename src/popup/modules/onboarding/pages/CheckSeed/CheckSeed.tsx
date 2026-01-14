@@ -1,4 +1,5 @@
-/* eslint-disable react/no-array-index-key,no-nested-ternary,max-len */
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable @stylistic/max-len */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
@@ -15,7 +16,7 @@ import { generateRandomNumbers } from '../../utils/generateRandomNumbers'
 import { NewAccountStore } from '../../modules/NewAccount/NewAccountStore'
 import { appRoutes } from '../../appRoutes'
 
-export const CheckSeed = observer((): JSX.Element => {
+export const CheckSeed = observer(() => {
     const navigate = useNavigate()
     const { seed } = useResolve(NewAccountStore)
     const notification = useResolve(NotificationStore)

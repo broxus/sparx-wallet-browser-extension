@@ -1,4 +1,4 @@
-import { memo, PropsWithChildren, ReactNode } from 'react'
+import { memo, type PropsWithChildren, type ReactNode } from 'react'
 import classNames from 'classnames'
 
 import './FormControl.scss'
@@ -10,7 +10,7 @@ type Props = PropsWithChildren<{
     invalid?: boolean;
 }>
 
-export const FormControl = memo(({ label, invalid, className, children }: Props): JSX.Element => (
+export const FormControl = memo(({ label, invalid, className, children }: Props) => (
     <div className={classNames('form-control', className, { _invalid: invalid })}>
         {label && (
             <label className="form-control__label">

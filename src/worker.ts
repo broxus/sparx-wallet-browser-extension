@@ -2,12 +2,12 @@ import init, * as nekoton from '@broxus/ever-wallet-wasm'
 import endOfStream from 'end-of-stream'
 import ObjectMultiplex from 'obj-multiplex'
 import pump from 'pump'
-import { Duplex, Transform } from 'readable-stream'
+import { type Duplex, Transform } from 'readable-stream'
 import browser from 'webextension-polyfill'
 import log from 'loglevel'
 
 import { NekotonController, WindowManager } from '@app/background'
-import { TriggerUiParams } from '@app/models'
+import { type TriggerUiParams } from '@app/models'
 import {
     ENVIRONMENT_TYPE_FULLSCREEN,
     ENVIRONMENT_TYPE_NOTIFICATION,
@@ -15,6 +15,7 @@ import {
     PortDuplexStream,
     fetchConfig,
 } from '@app/shared'
+
 
 let popupIsOpen: boolean = false,
     uiIsTriggering: boolean = false
@@ -110,7 +111,6 @@ async function initialize() {
     async function triggerUi(params: TriggerUiParams) {
         let firstAttempt = true
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             if (!uiIsTriggering && (params.force || !popupIsOpen)) {
                 uiIsTriggering = true

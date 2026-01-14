@@ -15,7 +15,7 @@ import { appRoutes } from '../../appRoutes'
 import { OnboardingStore } from '../../store'
 import s from './Welcome.module.scss'
 
-export const Welcome = observer((): JSX.Element => {
+export const Welcome = observer(() => {
     const { restoreFromBackup, loading, notification } = useResolve(OnboardingStore)
     const intl = useIntl()
     const navigate = useNavigate()
@@ -29,7 +29,6 @@ export const Welcome = observer((): JSX.Element => {
                 navigate(`${appRoutes.newAccount.path}/${appRoutes.confirmation.path}`)
             }
         })
-
     }, [navigate])
 
     return (
@@ -74,7 +73,9 @@ export const Welcome = observer((): JSX.Element => {
                                 {intl.formatMessage({ id: 'SIGN_IN_WITH_LEDGER' })}
                             </Button>
                             <Button
-                                design="ghost" shape="pill" size="l"
+                                design="ghost"
+shape="pill"
+size="l"
                                 onClick={handleRestore}
                             >
                                 {intl.formatMessage({ id: 'RESTORE_FROM_BACKUP' })}

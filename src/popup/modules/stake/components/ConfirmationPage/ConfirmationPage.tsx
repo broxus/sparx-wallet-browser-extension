@@ -8,7 +8,7 @@ import { EnterSendPassword } from '@app/popup/modules/send'
 import { ConfirmationPageViewModel } from './ConfirmationPageViewModel'
 import { StakeTransferStore } from '../../store'
 
-export const ConfirmationPage = observer((): JSX.Element => {
+export const ConfirmationPage = observer(() => {
     const vm = useViewModel(ConfirmationPageViewModel)
     const navigate = useNavigate()
     const { messageParams } = useResolve(StakeTransferStore)
@@ -22,7 +22,6 @@ export const ConfirmationPage = observer((): JSX.Element => {
         title = intl.formatMessage({ id: 'UNSTAKE_CONFIRM' })
     }
 
-
     return (
         <EnterSendPassword
             account={vm.transfer.account}
@@ -31,6 +30,7 @@ export const ConfirmationPage = observer((): JSX.Element => {
             amount={vm.transfer.messageParams?.amount}
             recipient={vm.transfer.messageToPrepare?.params?.[0]?.recipient}
             fees={vm.transfer.fees}
+            feeLoaded={vm.transfer.feeLoaded}
             error={vm.error}
             txErrors={vm.transfer.txErrors}
             txErrorsLoaded={vm.transfer.txErrorsLoaded}

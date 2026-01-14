@@ -12,7 +12,7 @@ import { ApproveRequestTonConnectViewModel, Step } from './ApproveRequestTonConn
 import styles from './ApproveRequestTonConnect.module.scss'
 import { AccountsListViewModel } from '../AccountsList/AccountsListViewModel'
 
-export const ApproveRequestTonConnect = observer((): JSX.Element => {
+export const ApproveRequestTonConnect = observer(() => {
     const vm = useViewModel(ApproveRequestTonConnectViewModel)
     const vmAcc = useViewModel(AccountsListViewModel)
     const intl = useIntl()
@@ -81,7 +81,9 @@ export const ApproveRequestTonConnect = observer((): JSX.Element => {
 
                     <Content className={styles.content}>
                         <Card
-                            size="s" bg="layer-1" padding="xs"
+                            size="s"
+                            bg="layer-1"
+                            padding="xs"
                             className={styles.user}
                         >
                             <UserInfo account={vm.selectedAccount} />

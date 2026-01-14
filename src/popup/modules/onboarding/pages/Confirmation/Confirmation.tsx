@@ -10,7 +10,7 @@ import { SOCIAL_URLS } from '@app/shared/constants'
 
 import s from './Confirmation.module.scss'
 
-export const Confirmation = memo((): JSX.Element => {
+export const Confirmation = memo(() => {
     const intl = useIntl()
 
     const socialLinks = [
@@ -40,8 +40,11 @@ export const Confirmation = memo((): JSX.Element => {
                 <Space direction="row" gap="l" className={s.socialRow}>
                     {socialLinks.map(link => (
                         <a
-                            key={link.url} href={link.url} target="_blank"
-                            rel="noopener noreferrer" className={s.buttonSocial}
+                            key={link.url}
+href={link.url}
+target="_blank"
+                            rel="noopener noreferrer"
+className={s.buttonSocial}
                         >
                             <button type="button" tabIndex={-1} className={s.buttonSocial}>
                                 {link.icon}

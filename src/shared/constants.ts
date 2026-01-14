@@ -1,4 +1,4 @@
-import { NetworkGroup } from './config'
+import { type NetworkGroup } from './config'
 
 export const ENVIRONMENT_TYPE_POPUP = 'popup'
 export const ENVIRONMENT_TYPE_NOTIFICATION = 'notification'
@@ -11,7 +11,7 @@ export type Environment =
     | typeof ENVIRONMENT_TYPE_NOTIFICATION
     | typeof ENVIRONMENT_TYPE_FULLSCREEN
     | typeof ENVIRONMENT_TYPE_BACKGROUND
-    | typeof ENVIRONMENT_TYPE_PHISHING_WARNING;
+    | typeof ENVIRONMENT_TYPE_PHISHING_WARNING
 
 export const CONTENT_SCRIPT = 'sparx-nekoton-contentscript'
 export const INPAGE_SCRIPT = 'sparx-nekoton-inpage'
@@ -21,6 +21,8 @@ export const STANDALONE_CONTROLLER = 'sparx-standalone-controller'
 export const STANDALONE_PROVIDER = 'sparx-standalone-provider'
 export const PHISHING_SAFELIST = 'sparx-phishing-safelist'
 export const PHISHING = 'sparx-phishing'
+
+export const INPAGE_ERROR = 'sparx-nekoton-inpage-error'
 
 export const NATIVE_CURRENCY_FALLBACK = 'EVER'
 
@@ -34,7 +36,6 @@ export const MS_INFO_URL = 'https://docs.everwallet.net/multisig/creating-a-mult
 
 export const BROXUS_BLOCKLIST_URL = 'https://raw.githubusercontent.com/broxus/ever-wallet-anti-phishing/master/blacklist.json'
 
-export const BROXUS_NFT_COLLECTIONS_LIST_URL = 'https://raw.githubusercontent.com/broxus/nft-lists/master/ever-wallet-default.json'
 
 export const WALLET_TERMS_URL = 'https://sparxwallet.com/terms'
 

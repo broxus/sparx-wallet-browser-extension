@@ -26,7 +26,7 @@ interface FormValue {
     password: string;
 }
 
-export const EnterPassword = observer((props: Props): JSX.Element => {
+export const EnterPassword = observer((props: Props) => {
     const {
         keyEntry,
         loading,
@@ -77,7 +77,9 @@ export const EnterPassword = observer((props: Props): JSX.Element => {
                     <FooterAction>
                         {keyEntry?.signerName !== 'ledger_key' ? (
                             <Button
-                                design="accent" type="submit" form="password"
+                                design="accent"
+type="submit"
+form="password"
                                 loading={loading}
                             >
                                 {intl.formatMessage({ id: 'NEXT_BTN_TEXT' })}

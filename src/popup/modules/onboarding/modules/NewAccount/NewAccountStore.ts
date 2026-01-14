@@ -62,7 +62,7 @@ export class NewAccountStore {
                     this.connectionStore.selectedConnectionNetworkGroup,
                     this.connectionStore.connectionConfig,
                 ),
-                workchain: 0,
+                workchain: this.connectionStore.workchainId,
             }, true)
         }
         catch (e: any) {
@@ -75,7 +75,6 @@ export class NewAccountStore {
             })
         }
         finally {
-
             runInAction(() => {
                 this.loading = false
             })

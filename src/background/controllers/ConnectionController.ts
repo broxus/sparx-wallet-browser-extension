@@ -5,13 +5,13 @@ import log from 'loglevel'
 import browser from 'webextension-polyfill'
 import isEqual from 'lodash.isequal'
 
-import { delay, NekotonRpcError, RpcErrorCode, throwError, ConnectionConfig, NetworkData, NetworkType, NetworkGroup, createBlockchainsByGroupProxy, PollingConfig } from '@app/shared'
-import { ConnectionData, ConnectionDataItem, Nekoton, SocketParams, UpdateCustomNetwork } from '@app/models'
+import { delay, NekotonRpcError, RpcErrorCode, throwError, type ConnectionConfig, type NetworkData, type NetworkType, type NetworkGroup, createBlockchainsByGroupProxy, type PollingConfig } from '@app/shared'
+import { type ConnectionData, type ConnectionDataItem, type Nekoton, type SocketParams, type UpdateCustomNetwork } from '@app/models'
 
-import { FetchCache } from '../utils/FetchCache'
+import { type FetchCache } from '../utils/FetchCache'
 import { Deserializers, Storage } from '../utils/Storage'
 import { GqlSocket, JrpcSocket, ProtoSocket } from '../socket'
-import { BaseConfig, BaseController, BaseState } from './BaseController'
+import { type BaseConfig, BaseController, type BaseState } from './BaseController'
 
 const getConnectionData = (networks: NetworkData[]) => networks.reduce((acc, item) => {
     acc[item.id] = item.type === 'graphql' ? { ...item, data: { endpoints: item.endpoints, local: false, latencyDetectionInterval: 60000, maxLatency: 100000 }} : { ...item, data: { endpoint: item.endpoint }}
@@ -81,6 +81,14 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
                 config.connectionConfig.defaultConnectionId,
             ),
         )
+        if (state?.networks) {
+            const workchainsById = Object.entries(state.networks).reduce((acc, [id, item]) => {
+                acc[id] = item.workchainId ?? 0
+                return acc
+            }, {} as Record<string, number>)
+            this.config.connectionConfig.updateWorkchainIdByConnectionId(workchainsById)
+        }
+
 
         this._initializedConnection = undefined
         this._networkMutex = new Mutex()
@@ -103,7 +111,8 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
     public get selectedConnectionPollings(): PollingConfig {
         const { blockchainsByGroup } = this.config.connectionConfig
         const config = blockchainsByGroup[this.state.selectedConnection.group]?.pollingConfig
-        return { tonWalletRefreshInterval: (config?.tonWalletRefreshInterval ?? 10) * 1000,
+        return {
+            tonWalletRefreshInterval: (config?.tonWalletRefreshInterval ?? 10) * 1000,
             tokenWalletRefreshInterval: (config?.tokenWalletRefreshInterval ?? 10) * 1000,
             intensivePollingInterval: (config?.intensivePollingInterval ?? 2) * 1000,
         }
@@ -229,6 +238,7 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
         return Object.entries(this.state.networks).map(([id, value]) => ({
             ...(value as ConnectionData),
             connectionId: parseInt(id, 10),
+            workchainId: value.workchainId ?? 0,
             description: this._descriptions[id],
         }))
     }
@@ -249,8 +259,6 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
 
     public async trySwitchingNetwork(first: ConnectionDataItem, allowOtherConnections: boolean) {
         const availableConnections = allowOtherConnections ? this.makeAvailableNetworksGroup(first) : [first]
-
-        log.trace(availableConnections)
 
         for (const connection of availableConnections) {
             log.trace(`Connecting to ${connection.name} ...`)
@@ -288,10 +296,12 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
         }
         else {
             // update network
-            const oldNetwork = this._customNetworks[id] ?? this.state.networks[id] ?? throwError(new NekotonRpcError(RpcErrorCode.INVALID_REQUEST, 'Network not found'))
+            const oldNetworkWithNewWorkchain = this.connectionConfig
+                .getNetwork(id, update.workchainId ?? 0) ?? throwError(new NekotonRpcError(RpcErrorCode.INVALID_REQUEST, 'Network not found'))
 
             network = {
-                ...oldNetwork,
+                ...oldNetworkWithNewWorkchain,
+                ...(this._customNetworks[id] || {}),
                 ...update,
             } as ConnectionData
         }
@@ -607,6 +617,8 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
     }
 
     private async _updateNetworkDescription(network: ConnectionDataItem): Promise<void> {
+        if (network.id === 'custom') return
+
         let connection: InitializedConnection | null = null
         try {
             connection = await this._initializeConnection(network)
@@ -637,6 +649,7 @@ export class ConnectionController extends BaseController<ConnectionControllerCon
         Object.entries(this._customNetworks).forEach(([id, network]) => {
             network.custom = true
             network.id = network.id ?? id
+            network.workchainId = network.workchainId ?? 0
         })
 
         this.update({
@@ -700,7 +713,7 @@ type InitializedConnection = { group: NetworkGroup; network: NetworkType; descri
             transport: nt.Transport;
         }
     >
-);
+)
 
 enum ConnectionTestType {
     Default,

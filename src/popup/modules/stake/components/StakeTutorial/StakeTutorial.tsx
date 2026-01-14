@@ -1,24 +1,26 @@
 import { observer } from 'mobx-react-lite'
 import { useIntl } from 'react-intl'
 
-import DefiImg from '@app/popup/assets/img/stake/defi.svg'
 import { AssetIcon, Button, Container, Content, Footer, SlidingPanel } from '@app/popup/modules/shared'
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
-// import { STAKE_APY_PERCENT, STAKE_TUTORIAL_URL } from '@app/shared'
-// import DollarImg from '@app/popup/assets/img/stake/dollar.svg'
+import DollarImg from '@app/popup/assets/img/stake/dollar.svg'
 
 import styles from './StakeTutorial.module.scss'
+import { formatFiat } from '@app/shared'
 
 type StakeTutorialProps = {
-    onClose: ()=>void
+    onClose: () => void
     active: boolean
     symbol: string
     receiveSymbol: string
     stTokenRoot: string
+    apy: string
 }
 
-export const StakeTutorial = observer(({ onClose,
-    active, receiveSymbol, symbol, stTokenRoot }:StakeTutorialProps): JSX.Element => {
+export const StakeTutorial = observer(({
+    onClose,
+    active, receiveSymbol, symbol, stTokenRoot, apy,
+}:StakeTutorialProps) => {
     const intl = useIntl()
 
     return (
@@ -49,7 +51,7 @@ export const StakeTutorial = observer(({ onClose,
                         </div>
                     </div>
 
-                    {/* <div className={styles.item}>
+                    <div className={styles.item}>
                         <img className={styles.img} src={DollarImg} alt="" />
                         <div className={styles.wrap}>
                             <div className={styles.label}>
@@ -60,23 +62,11 @@ export const StakeTutorial = observer(({ onClose,
                                 dangerouslySetInnerHTML={{
                                     __html: intl.formatMessage(
                                         { id: 'STAKE_TUTORIAL_DESCRIPTION_3' },
-                                        { url: STAKE_TUTORIAL_URL, apy: STAKE_APY_PERCENT },
+                                        { symbol: receiveSymbol, apy: formatFiat(apy, true) },
                                         { ignoreTag: true },
                                     ),
                                 }}
                             />
-                        </div>
-                    </div> */}
-
-                    <div className={styles.item}>
-                        <img className={styles.img} src={DefiImg} alt="" />
-                        <div className={styles.wrap}>
-                            <div className={styles.label}>
-                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_TITLE_4' }, { symbol })}
-                            </div>
-                            <div className={styles.text}>
-                                {intl.formatMessage({ id: 'STAKE_TUTORIAL_DESCRIPTION_4' }, { symbol })}
-                            </div>
                         </div>
                     </div>
                 </Content>

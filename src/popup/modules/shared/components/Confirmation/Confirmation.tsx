@@ -1,4 +1,4 @@
-import { memo, ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { useIntl } from 'react-intl'
 
 import { FooterAction } from '@app/popup/modules/shared/components/layout/Footer/FooterAction'
@@ -18,7 +18,7 @@ interface Props {
 
 export type ConfirmationProps = Props
 
-export const Confirmation = memo((props: Props): JSX.Element => {
+export const Confirmation = memo((props: Props) => {
     const { title, body, cancelBtnText, confirmBtnText, onConfirm, onCancel } = props
     const intl = useIntl()
 

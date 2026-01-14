@@ -3,8 +3,7 @@ import BigNumber from 'bignumber.js'
 import { makeAutoObservable, runInAction } from 'mobx'
 import { inject, injectable } from 'tsyringe'
 
-import type { Nekoton, TokenMessageToPrepare, TransferMessageToPrepare, WithdrawRequest } from '@app/models'
-import { ConnectionDataItem } from '@app/models'
+import { type Nekoton, type TokenMessageToPrepare, type TransferMessageToPrepare, type WithdrawRequest, ConnectionDataItem } from '@app/models'
 import { AccountabilityStore, ConnectionStore, createEnumField, LocalizationStore, NekotonToken, Router, RpcStore, StakeStore } from '@app/popup/modules/shared'
 import { parseError } from '@app/popup/utils'
 import { MULTISIG_UNCONFIRMED_LIMIT, parseCurrency, parseEvers } from '@app/shared'
@@ -43,6 +42,10 @@ export class StakePrepareMessageViewModel {
 
     public get stSymbol(): string {
         return this.stakeStore.stakingInfo.symbol
+    }
+
+    public get apy(): string {
+        return this.stakeStore.apy
     }
 
     public get currencyName(): string {
@@ -142,11 +145,11 @@ export class StakePrepareMessageViewModel {
 
             if (this.tab.is(Tab.Stake)) {
                 // deposit
-
                 const amount = BigNumber.sum(
                     parseEvers(data.amount),
                     fee.depositAttachedFee,
                 ).toFixed()
+
                 messageToPrepare = {
                     publicKey: this.transfer.key.publicKey,
                     params: [{

@@ -23,7 +23,7 @@ interface Props {
     onOpenAccountInExplorer(address: string): void;
 }
 
-export const MultisigTransactionInfo = observer((props: Props): JSX.Element => {
+export const MultisigTransactionInfo = observer((props: Props) => {
     const { transaction, onOpenTransactionInExplorer, onOpenAccountInExplorer } = props
     const vm = useViewModel(MultisigTransactionInfoViewModel, model => {
         model.transaction = transaction
@@ -81,6 +81,7 @@ export const MultisigTransactionInfo = observer((props: Props): JSX.Element => {
                 amount={vm.amount}
                 recipient={address}
                 fees={vm.fees}
+                feeLoaded={vm.feeLoaded}
                 error={vm.error}
                 txErrors={vm.txErrors}
                 txErrorsLoaded={vm.txErrorsLoaded}
@@ -195,7 +196,9 @@ export const MultisigTransactionInfo = observer((props: Props): JSX.Element => {
                                     <button type="button" className={styles.copy}>
                                         {convertHash(vm.txHash)}
                                         <Icon
-                                            icon="copy" className={styles.icon} width={16}
+                                            icon="copy"
+className={styles.icon}
+width={16}
                                             height={16}
                                         />
                                     </button>

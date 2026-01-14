@@ -2,6 +2,7 @@
 import { observer } from 'mobx-react-lite'
 import React, { useState } from 'react'
 import { useIntl } from 'react-intl'
+import { repackAddress } from '@broxus/ever-wallet-wasm'
 
 import {
     Button,
@@ -16,56 +17,27 @@ import {
     useSearch,
     useViewModel,
 } from '@app/popup/modules/shared'
-import { TokenWalletsToUpdate } from '@app/models'
+import { type TokenWalletsToUpdate } from '@app/models'
 import { TokenItem } from '@app/popup/modules/main/components/ManageAssets/components/TokenItem'
 import { SlidingPanelHeader } from '@app/popup/modules/shared/components/SlidingPanel/SlidingPanelHeader'
-import { isTokenSymbol } from '@app/shared'
-import { parseTonAddress } from '@app/popup/utils/parseTonAddress'
 
 import { ManageAssetsViewModel } from './ManageAssetsViewModel'
 import styles from './ManageAssets.module.scss'
+import { useGetTokens } from './lib/useGetTokens'
 
 type SearchItem = {
     name: string;
     fullName: string;
     rootTokenContract: string;
     old: boolean;
-};
+}
 
-export const ManageAssets = observer((): JSX.Element => {
+export const ManageAssets = observer(() => {
     const vm = useViewModel(ManageAssetsViewModel)
     const intl = useIntl()
     const [result, setResult] = useState<TokenWalletsToUpdate>({})
 
-    const { tokens, existingTokens } = React.useMemo(() => {
-        const tokens = vm.tokensManifest?.tokens?.map((token) => ({
-            name: token.symbol,
-            fullName: token.name,
-            rootTokenContract: token.address,
-            old: !!token.version && token.version < 5 && !vm.tokensManifest?.name?.startsWith('TON'),
-        })) ?? []
-
-        const existingTokens: TokenWalletsToUpdate = {}
-        for (const token of vm.tokenWalletAssets) {
-            existingTokens[token.rootTokenContract] = true
-
-            if (!vm.tokens?.[token.rootTokenContract]) {
-                const symbol = vm.knownTokens[token.rootTokenContract]
-                if (!symbol) {
-                    continue
-                }
-
-                tokens.push({
-                    name: symbol.name,
-                    fullName: symbol.fullName,
-                    rootTokenContract: symbol.rootTokenContract,
-                    old: isTokenSymbol(symbol) && symbol.version === 'OldTip3v4',
-                })
-            }
-        }
-
-        return { existingTokens, tokens }
-    }, [vm.tokenWalletAssets, vm.tokens, vm.knownTokens, vm.tokensManifest?.tokens])
+    const { tokens, existingTokens } = useGetTokens(vm)
 
     const search = useSearch(tokens, filter)
 
@@ -73,7 +45,13 @@ export const ManageAssets = observer((): JSX.Element => {
         if (/^(?:-1|0):[0-9a-fA-F]{64}$/.test(search.props.value)) {
             return search.props.value
         }
-        return parseTonAddress(search.props.value)
+
+        try {
+            return repackAddress(search.props.value)
+        }
+        catch (error) {
+            return ''
+        }
     }, [search.props.value])
 
     const isTokenAddressValid = React.useMemo(

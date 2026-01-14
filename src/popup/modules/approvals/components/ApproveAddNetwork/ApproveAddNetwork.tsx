@@ -24,7 +24,7 @@ import { ApproveAddNetworkViewModel } from './ApproveAddNetworkViewModel'
 import styles from './ApproveAddNetwork.module.scss'
 
 
-export const ApproveAddNetwork = observer((): JSX.Element | null => {
+export const ApproveAddNetwork = observer(() => {
     const vm = useViewModel(ApproveAddNetworkViewModel)
     const intl = useIntl()
 
@@ -39,7 +39,9 @@ export const ApproveAddNetwork = observer((): JSX.Element | null => {
             <Content>
                 {vm.selectedAccount && (
                     <Card
-                        size="s" bg="layer-1" padding="xs"
+                        size="s"
+bg="layer-1"
+padding="xs"
                         className={styles.user}
                     >
                         <UserInfo account={vm.selectedAccount} />
@@ -59,7 +61,7 @@ export const ApproveAddNetwork = observer((): JSX.Element | null => {
 
                     <hr />
 
-                    <ParamsView params={{ network: vm.approval.requestData.addNetwork }} />
+                    <ParamsView params={{ network: vm.approval.requestData.addNetwork }} isViewParamsReadable />
 
                     <Switch checked={vm.switchNetwork} onChange={vm.onSwitch}>
                         {intl.formatMessage({ id: 'APPROVE_ADD_NETWORK_SWITCH_LABEL' })}

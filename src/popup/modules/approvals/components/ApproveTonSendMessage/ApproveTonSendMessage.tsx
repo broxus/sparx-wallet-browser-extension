@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/* eslint-disable @stylistic/max-len */
 import { observer } from 'mobx-react-lite'
 import { useEffect, useState } from 'react'
 import { useIntl } from 'react-intl'
@@ -34,7 +34,7 @@ import { ApproveTonSendMessageViewModel } from './ApproveTonSendMessageViewModel
 import styles from './ApproveTonSendMessage.module.scss'
 import { ParamsView } from '../ParamsView'
 
-export const ApproveTonSendMessage = observer((): JSX.Element | null => {
+export const ApproveTonSendMessage = observer(() => {
     const { symbol, decimals } = useResolve(ConnectionStore)
     const vm = useViewModel(ApproveTonSendMessageViewModel)
     const [txErrorConfirmed, setTxErrorConfirmed] = useState(false)
@@ -80,7 +80,9 @@ export const ApproveTonSendMessage = observer((): JSX.Element | null => {
 
             <Content>
                 <Card
-                    size="s" bg="layer-1" padding="xs"
+                    size="s"
+bg="layer-1"
+padding="xs"
                     className={styles.user}
                 >
                     <UserInfo account={vm.account} />

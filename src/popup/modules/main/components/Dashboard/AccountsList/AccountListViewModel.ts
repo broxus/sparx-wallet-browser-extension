@@ -2,7 +2,7 @@ import type * as nt from '@broxus/ever-wallet-wasm'
 import { makeAutoObservable } from 'mobx'
 import { injectable } from 'tsyringe'
 
-import { AccountabilityStore, RpcStore, SlidingPanelHandle, Utils } from '@app/popup/modules/shared'
+import { AccountabilityStore, ConnectionStore, RpcStore, SlidingPanelHandle, Utils } from '@app/popup/modules/shared'
 import { getScrollWidth } from '@app/popup/utils'
 import { ExternalAccount } from '@app/models'
 
@@ -14,8 +14,9 @@ export class AccountListViewModel {
     constructor(
         private rpcStore: RpcStore,
         private accountability: AccountabilityStore,
+        private connectionStore: ConnectionStore,
         public handle: SlidingPanelHandle,
-         private utils: Utils,
+        private utils: Utils,
     ) {
         makeAutoObservable(this, undefined, { autoBind: true })
 
@@ -62,16 +63,20 @@ export class AccountListViewModel {
     }
 
     public get accounts(): nt.AssetsList[] {
-        return Object.values(this.rpcStore.state.accountEntries)
-            .filter((item) => this.rpcStore.state.accountsVisibility[item.tonWallet.address])
+        return Object.values(this.accountability.accountEntries)
+            .filter((item) => item && this.rpcStore.state.accountsVisibility[item.tonWallet.address]) as nt.AssetsList[]
     }
 
-    public get externalAccounts(): {[address: string]: ExternalAccount | undefined} {
+    public get externalAccounts(): { [address: string]: ExternalAccount | undefined } {
         return Object.fromEntries(this.accountability.externalAccounts.map(item => [item.address, item]))
     }
 
     public get selectedAccount(): nt.AssetsList | undefined {
         return this.accountability.selectedAccount
+    }
+
+    public get selectedWorkchainId(): number {
+        return this.connectionStore.workchainId
     }
 
     public get accountContractStates(): Record<string, nt.ContractState> {

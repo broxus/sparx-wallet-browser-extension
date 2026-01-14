@@ -11,7 +11,7 @@ import styles from './SelectDerivedKeys.module.scss'
 
 const PAGE_LENGTH = 5
 
-type PublicKeys = Map<string, number>;
+type PublicKeys = Map<string, number>
 
 interface Props {
     publicKeys: PublicKeys;
@@ -23,7 +23,7 @@ interface Props {
     onSubmit: (publicKeys: PublicKeys) => void;
 }
 
-export const SelectDerivedKeys = observer((props: Props): JSX.Element => {
+export const SelectDerivedKeys = observer((props: Props) => {
     const {
         publicKeys,
         preselectedKey,
@@ -100,8 +100,11 @@ export const SelectDerivedKeys = observer((props: Props): JSX.Element => {
             <Footer layer>
                 <FooterAction>
                     <Button
-                        key="select" design="accent" disabled={selectedKeys.size === 0}
-                        loading={loading} onClick={onSelect}
+                        key="select"
+design="accent"
+disabled={selectedKeys.size === 0}
+                        loading={loading}
+onClick={onSelect}
                     >
                         {intl.formatMessage({ id: 'SELECT_BTN_TEXT' })}
                     </Button>

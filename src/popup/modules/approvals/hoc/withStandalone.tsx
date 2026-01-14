@@ -1,21 +1,18 @@
 import ObjectMultiplex from 'obj-multiplex'
 import pump from 'pump'
-import { FC, useEffect, useState } from 'react'
-import { DependencyContainer } from 'tsyringe'
+import { type FC, useEffect, useState } from 'react'
+import { type DependencyContainer } from 'tsyringe'
 import browser from 'webextension-polyfill'
 
 import { closeCurrentWindow, PortDuplexStream, STANDALONE_CONTROLLER } from '@app/shared'
-import { IControllerRpcClient, makeControllerRpcClient } from '@app/popup/utils'
+import { type IControllerRpcClient, makeControllerRpcClient } from '@app/popup/utils'
 import { AppConfig, DIProvider, useDI, useResolve } from '@app/popup/modules/shared'
 import type { StandaloneController } from '@app/background'
 
 import { setup } from '../di-container'
 
-export function withStandalone<P extends {}>(Component: FC): {
-    (props: P): JSX.Element | null;
-    displayName: string;
-} {
-    function WithStandalone(props: P): JSX.Element | null {
+export function withStandalone<P extends {}>(Component: FC): FC<P> {
+    function WithStandalone(props: P) {
         const [container, setContainer] = useState<DependencyContainer | null>(null)
         const parent = useDI()
         const { windowInfo } = useResolve(AppConfig)

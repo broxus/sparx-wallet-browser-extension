@@ -1,18 +1,20 @@
-import { Address } from 'everscale-inpage-provider'
 import type * as nt from '@broxus/ever-wallet-wasm'
 
 import type { Nekoton } from '@app/models'
+import { BlockchainConfigParams } from '@broxus/ever-wallet-wasm'
 
-import { BaseConfig, BaseController } from './BaseController'
-import type { BaseState } from './BaseController'
-import { ContractFactory } from '../utils/Contract'
+import { type BaseConfig, BaseController, type BaseState } from './BaseController'
+import { type ContractFactory } from '../utils/Contract'
+import { CONFIG_ABI, getParamsConfig } from '../utils/utils'
+import { BigNumber } from 'bignumber.js'
+import { Address } from 'everscale-inpage-provider'
 
 interface StakeControllerConfig extends BaseConfig {
     nekoton: Nekoton;
     contractFactory: ContractFactory;
 }
 
-export class GasController extends BaseController<StakeControllerConfig, BaseState> {
+export class BlockchainConfigController extends BaseController<StakeControllerConfig, BaseState> {
 
     constructor(config: StakeControllerConfig, state?: BaseState) {
         super(config, state)
@@ -21,34 +23,10 @@ export class GasController extends BaseController<StakeControllerConfig, BaseSta
     }
 
     public async getPrice(): Promise<MasterChainConfigData> {
-        const confAddress = new Address('-1:5555555555555555555555555555555555555555555555555555555555555555')
-        const contract = this.config.contractFactory.create(CONFIG_ABI, confAddress)
-        const fields = await contract.getContractFields()
-
-        if (fields == null) {
-            throw new Error('Config contract state not found')
-        }
-
-        const { boc: nonEmptyMap } = await this.config.nekoton.packIntoCell(
-            [
-                { name: 'flag', type: 'bool' },
-                { name: 'root', type: 'cell' },
-            ] as nt.AbiParam[],
-            {
-                flag: true,
-                root: fields.paramsRoot,
-            },
-            '2.2',
-        )
-
-        const { params: rawParams } = await this.config.nekoton.unpackFromCell([{ name: 'params', type: 'map(uint32,cell)' }] as nt.AbiParam[], nonEmptyMap, true, '2.2')
-
-        const params = new Map<number, string>()
-
-        for (const [id, value] of rawParams as any) {
-            params.set(parseInt(id, 10), value)
-        }
-
+        const params = await getParamsConfig({
+            nekoton: this.config.nekoton,
+            contractFactory: this.config.contractFactory,
+        })
         const param = params.get(21)
 
         if (!param) {
@@ -71,11 +49,31 @@ export class GasController extends BaseController<StakeControllerConfig, BaseSta
         const p = params ?? (await this.getPrice())
 
         const priceNum = p?.gasPrice ?? baseGasPrice(type)
-        const gasPrice = BigInt(priceNum) / baseGasPrice(type)
+        const gasPrice = BigNumber(priceNum).div(baseGasPrice(type).toString())
 
-        const gas = BigInt(dynamicGas) * BigInt(gasPrice) + BigInt(fixedGas)
+        const gas = BigNumber(dynamicGas).multipliedBy(gasPrice).plus(BigNumber(fixedGas))
 
         return gas.toString()
+    }
+
+    public async getFundamentalAddresses(): Promise<Set<Address>> {
+        const params = new BlockchainConfigParams(await this._getParamsRoot())
+
+        return new Set(params
+            .fundamentalSmcAddr()
+            .map((address) => new Address(address)))
+    }
+
+    private _getParamsRoot = async (): Promise<string> => {
+        const confAddress = new Address('-1:5555555555555555555555555555555555555555555555555555555555555555')
+        const contract = this.config.contractFactory.create(CONFIG_ABI, confAddress)
+        const fields = await contract.getContractFields()
+
+        if (fields == null) {
+            throw new Error('Config contract state not found')
+        }
+
+        return fields.paramsRoot
     }
 
 }
@@ -85,7 +83,7 @@ const enum GasPriceType {
     masterchainGasLimitsAndPrices,
     masterchainMessageForwardingPrices,
     workchainGasLimitsAndPrices,
-    workchainMessageForwardingPrices
+    workchainMessageForwardingPrices,
 }
 
 export function paramsKey(type: GasPriceType): number {
@@ -114,21 +112,6 @@ export function baseGasPrice(type: GasPriceType): bigint {
         default: return _evrscaleWorkchainGasPrice
     }
 }
-
-
-export const CONFIG_ABI = {
-    'ABI version': 2,
-    events: [],
-    fields: [
-        {
-            name: 'paramsRoot',
-            type: 'cell',
-        },
-    ],
-    functions: [],
-    header: [],
-    version: '2.2',
-} as const
 
 export const PRICES_PARAM_ABI = [
     {
@@ -162,4 +145,4 @@ export type MasterChainConfigData = {
     deleteDueLimit: string;
     flatGasLimit: string;
     flatGasPrice: string;
-};
+}
